@@ -12,6 +12,7 @@ import { Divider } from "@heroui/divider";
 import { useTeams } from "@/hooks/useTeams";
 import { useRouter } from "next/navigation";
 import { Team } from "@/types";
+import { useUser } from "@clerk/nextjs";
 
 export default function TeamsPage({
     params,
@@ -28,13 +29,29 @@ export default function TeamsPage({
     });
     const [joinCode, setJoinCode] = useState("");
     const router = useRouter();
+    const { user } = useUser();
+    
+    // Check if user is already in a team
+    const userTeam = teams.find(team => 
+        team.members.some(member => 
+            member.email === user?.primaryEmailAddress?.emailAddress
+        )
+    );
+    const isUserInTeam = !!userTeam;
 
     const handleCreateTeam = async () => {
+        if (!user) return;
+        
         try {
             const newTeam = await createTeam({
                 name: formData.name,
                 description: formData.description,
-                members: [],
+                members: [{
+                    id: user.id,
+                    name: user.fullName || user.firstName || "Unknown User",
+                    email: user.primaryEmailAddress?.emailAddress || "",
+                    role: "guest" // Team leader role
+                }],
                 hackathonId: params.hackathonId,
             });
             setFormData({ name: "", description: "" });
@@ -52,11 +69,27 @@ export default function TeamsPage({
         onJoinOpen();
     };
 
-    const handleSubmitJoin = () => {
-        if (selectedTeam) {
-            // In a real app, you'd validate the join code and add the user to the team
-            // For now, we'll just redirect to team details
-            router.push(`/${params.hackathonId}/team-details`);
+    const handleSubmitJoin = async () => {
+        if (selectedTeam && user) {
+            try {
+                // In a real app, you'd validate the join code and add the user to the team
+                // For now, we'll simulate adding the user to the team
+                const updatedMembers = [...selectedTeam.members, {
+                    id: user.id,
+                    name: user.fullName || user.firstName || "Unknown User",
+                    email: user.primaryEmailAddress?.emailAddress || "",
+                    role: "guest" as const
+                }];
+                
+                await updateTeam(selectedTeam.id, {
+                    members: updatedMembers
+                });
+                
+                onJoinClose();
+                router.push(`/${params.hackathonId}/team-details`);
+            } catch (error) {
+                console.error("Failed to join team:", error);
+            }
         }
     };
 
@@ -83,14 +116,28 @@ export default function TeamsPage({
                         <h1 className="text-3xl font-bold terminal-text text-hacker-green">
                             TEAM SELECTION
                         </h1>
-                        <p className="text-outer-space">Join an existing team or form your own squad</p>
+                        {isUserInTeam ? (
+                            <p className="text-fluorescent-cyan">You are already in team: {userTeam?.name}</p>
+                        ) : (
+                            <p className="text-outer-space">Join an existing team or form your own squad</p>
+                        )}
                     </div>
-                    <Button
-                        className="cyber-button"
-                        onPress={openCreateModal}
-                    >
-                        CREATE TEAM
-                    </Button>
+                    {!isUserInTeam && (
+                        <Button
+                            className="cyber-button"
+                            onPress={openCreateModal}
+                        >
+                            CREATE TEAM
+                        </Button>
+                    )}
+                    {isUserInTeam && (
+                        <Button
+                            className="cyber-button"
+                            onPress={() => router.push(`/${params.hackathonId}/team-details`)}
+                        >
+                            VIEW MY TEAM
+                        </Button>
+                    )}
                 </div>
 
                 {/* Teams Grid */}
@@ -177,11 +224,12 @@ export default function TeamsPage({
 
                                 <Button
                                     className="w-full cyber-button"
-                                    variant={team.members.length < 4 ? "solid" : "bordered"}
-                                    disabled={team.members.length >= 4}
+                                    variant={team.members.length < 4 && !isUserInTeam ? "solid" : "bordered"}
+                                    disabled={team.members.length >= 4 || isUserInTeam}
                                     onPress={() => handleJoinTeam(team)}
                                 >
-                                    {team.members.length < 4 ? "JOIN TEAM" : "TEAM FULL"}
+                                    {isUserInTeam ? "ALREADY IN TEAM" : 
+                                     team.members.length < 4 ? "JOIN TEAM" : "TEAM FULL"}
                                 </Button>
                             </CardBody>
                         </Card>

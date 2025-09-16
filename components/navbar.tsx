@@ -17,6 +17,7 @@ import { link as linkStyles } from "@heroui/theme";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 
 import { siteConfig } from "@/config/site";
 import { GithubIcon } from "@/components/icons";
@@ -24,10 +25,11 @@ import { GithubIcon } from "@/components/icons";
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user } = useUser();
 
   // Check if we're in a hackathon-specific route
-  const adminMatch = pathname.match(/^\/admin\/([^\/]+)\/(dashboard|teams|submissions|sponsors|prizes|issues)/);
-  const userMatch = pathname.match(/^\/([^\/]+)\/(teams|team-details|leaderboard)/);
+  const adminMatch = pathname.match(/^\/([^\/]+)\/admin\/(dashboard|teams|submissions|sponsors|prizes|issues)/);
+  const userMatch = pathname.match(/^\/([^\/]+)\/(teams|team-details|leaderboard)$/);
   const hackathonId = adminMatch ? adminMatch[1] : (userMatch ? userMatch[1] : null);
   const isInAdminHackathon = !!adminMatch;
   const isInUserHackathon = !!userMatch;
@@ -37,7 +39,7 @@ export const Navbar = () => {
   const navItems = useMemo(() => {
     if (isInAdminHackathon) {
       return [
-        { label: "Dashboard", href: `/admin/${hackathonId}/dashboard` },
+        { label: "Dashboard", href: `/admin/${hackathonId}/` },
         { label: "Teams", href: `/admin/${hackathonId}/teams` },
         { label: "Submissions", href: `/admin/${hackathonId}/submissions` },
         { label: "Sponsors", href: `/admin/${hackathonId}/sponsors` },
@@ -64,7 +66,6 @@ export const Navbar = () => {
         { label: "Prizes", href: `/admin/${hackathonId}/prizes` },
         { label: "Issues", href: `/admin/${hackathonId}/issues` },
         { label: "All Hackathons", href: "/" },
-        { label: "Admin Panel", href: "/admin" },
       ];
     } else if (isInUserHackathon) {
       return [
@@ -130,22 +131,59 @@ export const Navbar = () => {
             <GithubIcon className="text-hacker-green hover:text-fluorescent-cyan transition-colors" />
           </Link>
         </NavbarItem>
-        <NavbarItem className="hidden md:flex">
-          <NextLink href="/admin">
-            <Button
-              className="cyber-button"
-              size="sm"
-            >
-              ADMIN PANEL
-            </Button>
-          </NextLink>
-        </NavbarItem>
+        
+        <SignedIn>
+          <NavbarItem className="hidden md:flex">
+            <NextLink href="/admin">
+              <Button
+                className="cyber-button"
+                size="sm"
+              >
+                ADMIN PANEL
+              </Button>
+            </NextLink>
+          </NavbarItem>
+          <NavbarItem>
+            <UserButton 
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8",
+                  userButtonPopoverCard: "hacker-card border border-hacker-green",
+                  userButtonPopoverActionButton: "text-outer-space hover:text-hacker-green",
+                  userButtonPopoverActionButtonText: "font-mono",
+                }
+              }}
+            />
+          </NavbarItem>
+        </SignedIn>
+        
+        <SignedOut>
+          <NavbarItem>
+            <SignInButton mode="modal">
+              <Button
+                className="cyber-button"
+                size="sm"
+              >
+                SIGN IN
+              </Button>
+            </SignInButton>
+          </NavbarItem>
+        </SignedOut>
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
         <Link isExternal aria-label="Github" href={siteConfig.links.github}>
           <GithubIcon className="text-hacker-green" />
         </Link>
+        <SignedIn>
+          <UserButton 
+            appearance={{
+              elements: {
+                avatarBox: "w-6 h-6",
+              }
+            }}
+          />
+        </SignedIn>
         <NavbarMenuToggle className="text-hacker-green" />
       </NavbarContent>
 
@@ -168,6 +206,19 @@ export const Navbar = () => {
               </NextLink>
             </NavbarMenuItem>
           ))}
+          
+          <SignedOut>
+            <NavbarMenuItem>
+              <SignInButton mode="modal">
+                <Button
+                  className="cyber-button w-full"
+                  size="sm"
+                >
+                  SIGN IN
+                </Button>
+              </SignInButton>
+            </NavbarMenuItem>
+          </SignedOut>
         </div>
       </NavbarMenu>
     </HeroUINavbar>

@@ -15,6 +15,7 @@ import { useTeams } from "@/hooks/useTeams";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { useSponsors } from "@/hooks/useSponsors";
 import { Team, Submission, SubmissionState } from "@/types";
+import { useUser } from "@clerk/nextjs";
 
 export default function TeamDetailsPage({
     params,
@@ -25,6 +26,7 @@ export default function TeamDetailsPage({
     const { submissions, loading: submissionsLoading, createSubmission, updateSubmission } = useSubmissions(params.hackathonId);
     const { sponsors } = useSponsors(params.hackathonId);
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const { user } = useUser();
 
     const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
     const [teamSubmission, setTeamSubmission] = useState<Submission | null>(null);
@@ -37,28 +39,39 @@ export default function TeamDetailsPage({
         sponsorsUsed: [] as string[],
     });
 
-    // Simulate finding user's team (in real app, this would come from auth)
+    // Find user's team based on authenticated user
     useEffect(() => {
-        if (teams.length > 0) {
-            // For demo, assume user is in the first team
-            const userTeam = teams[0];
-            setCurrentTeam(userTeam);
+        if (teams.length > 0 && user) {
+            // Find team where the user is a member (by email)
+            const userTeam = teams.find(team => 
+                team.members.some(member => 
+                    member.email === user.primaryEmailAddress?.emailAddress
+                )
+            );
+            
+            if (userTeam) {
+                setCurrentTeam(userTeam);
 
-            // Find team's submission
-            const submission = submissions.find(s => s.teamId === userTeam.id);
-            setTeamSubmission(submission || null);
+                // Find team's submission
+                const submission = submissions.find(s => s.teamId === userTeam.id);
+                setTeamSubmission(submission || null);
 
-            if (submission) {
-                setFormData({
-                    title: submission.title,
-                    description: submission.description,
-                    githubLink: submission.githubLink,
-                    presentationLink: submission.presentationLink || "",
-                    sponsorsUsed: submission.sponsorsUsed,
-                });
+                if (submission) {
+                    setFormData({
+                        title: submission.title,
+                        description: submission.description,
+                        githubLink: submission.githubLink,
+                        presentationLink: submission.presentationLink || "",
+                        sponsorsUsed: submission.sponsorsUsed,
+                    });
+                }
+            } else {
+                // User is not part of any team yet
+                setCurrentTeam(null);
+                setTeamSubmission(null);
             }
         }
-    }, [teams, submissions]);
+    }, [teams, submissions, user]);
 
     const handleCreateSubmission = async () => {
         if (!currentTeam) return;

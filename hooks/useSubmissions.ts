@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import { Submission, SubmissionState } from "@/types";
-import { apiService } from "@/services/mockApi";
+import { Submission, SubmissionCreate, SubmissionUpdate } from "@/types";
+import { apiService } from "@/services";
 
-export function useSubmissions(hackathonId: string) {
+export function useSubmissions(hackathonId: number) {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSubmissions = async () => {
     if (!hackathonId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -22,10 +22,10 @@ export function useSubmissions(hackathonId: string) {
     }
   };
 
-  const createSubmission = async (submission: Omit<Submission, "id" | "createdAt" | "updatedAt">) => {
+  const createSubmission = async (teamId: number, submission: SubmissionCreate) => {
     try {
       setError(null);
-      const newSubmission = await apiService.createSubmission(submission);
+      const newSubmission = await apiService.createSubmission(teamId, submission);
       setSubmissions(prev => [...prev, newSubmission]);
       return newSubmission;
     } catch (err) {
@@ -34,7 +34,7 @@ export function useSubmissions(hackathonId: string) {
     }
   };
 
-  const updateSubmission = async (id: string, submission: Partial<Submission>) => {
+  const updateSubmission = async (id: number, submission: SubmissionUpdate) => {
     try {
       setError(null);
       const updatedSubmission = await apiService.updateSubmission(id, submission);
@@ -42,18 +42,6 @@ export function useSubmissions(hackathonId: string) {
       return updatedSubmission;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update submission");
-      throw err;
-    }
-  };
-
-  const updateSubmissionState = async (id: string, state: SubmissionState) => {
-    try {
-      setError(null);
-      const updatedSubmission = await apiService.updateSubmissionState(id, state);
-      setSubmissions(prev => prev.map(s => s.id === id ? updatedSubmission : s));
-      return updatedSubmission;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update submission state");
       throw err;
     }
   };
@@ -69,39 +57,10 @@ export function useSubmissions(hackathonId: string) {
     refetch: fetchSubmissions,
     createSubmission,
     updateSubmission,
-    updateSubmissionState,
   };
 }
 
-export function useSubmission(id: string) {
-  const [submission, setSubmission] = useState<Submission | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchSubmission = async () => {
-    if (!id) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await apiService.getSubmission(id);
-      setSubmission(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch submission");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSubmission();
-  }, [id]);
-
-  return {
-    submission,
-    loading,
-    error,
-    refetch: fetchSubmission,
-  };
-}
+// Note: The new API doesn't have a getSubmission endpoint
+// Individual submission fetching would need to be handled differently
+// or added to the backend API
 

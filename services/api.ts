@@ -1,50 +1,54 @@
-import { Hackathon, Team, Submission, Sponsor, Prize, Issue, User, UserRole, SubmissionState } from "@/types";
+import {
+  Hackathon,
+  Team,
+  Submission,
+  Sponsor,
+  Prize,
+  Issue,
+  User,
+  UserRole,
+  SubmissionState,
+  HackathonCreate,
+  HackathonUpdate,
+  TeamCreate,
+  TeamUpdate,
+  SubmissionCreate,
+  SubmissionUpdate,
+  SponsorCreate,
+  PrizeCreate,
+  IssueCreate,
+  JoinRequest,
+  InviteRequest
+} from "@/types";
 
 export interface ApiService {
   // Hackathon operations
-  getHackathons(): Promise<Hackathon[]>;
-  getHackathon(id: string): Promise<Hackathon>;
-  createHackathon(hackathon: Omit<Hackathon, "id" | "createdAt" | "updatedAt" | "pinCode" | "isStarted" | "organisers" | "sponsors" | "teams" | "submissions" | "prizes" | "issues">): Promise<Hackathon>;
-  updateHackathon(id: string, hackathon: Partial<Hackathon>): Promise<Hackathon>;
-  startHackathon(id: string): Promise<Hackathon>;
-  generatePinCode(hackathonId: string): Promise<string>;
-  
-  // User operations
-  getUsers(hackathonId: string): Promise<User[]>;
-  inviteUser(hackathonId: string, email: string, role: UserRole): Promise<User>;
-  inviteUserByPin(pinCode: string, user: Omit<User, "id" | "createdAt" | "role">): Promise<User>;
-  
+  createHackathon(hackathon: HackathonCreate): Promise<Hackathon>;
+  getHackathon(id: number): Promise<Hackathon>;
+  updateHackathon(id: number, hackathon: HackathonUpdate): Promise<Hackathon>;
+  joinHackathon(joinRequest: JoinRequest): Promise<{ message: string }>;
+  inviteUser(hackathonId: number, invite: InviteRequest): Promise<{ message: string }>;
+
   // Team operations
-  getTeams(hackathonId: string): Promise<Team[]>;
-  getTeam(id: string): Promise<Team>;
-  createTeam(team: Omit<Team, "id" | "createdAt" | "updatedAt">): Promise<Team>;
-  updateTeam(id: string, team: Partial<Team>): Promise<Team>;
-  joinTeam(teamId: string, userId: string): Promise<Team>;
-  leaveTeam(teamId: string, userId: string): Promise<Team>;
-  
+  getTeams(hackathonId: number): Promise<Team[]>;
+  createTeam(hackathonId: number, team: TeamCreate): Promise<Team>;
+  updateTeam(teamId: number, team: TeamUpdate): Promise<Team>;
+
   // Submission operations
-  getSubmissions(hackathonId: string): Promise<Submission[]>;
-  getSubmission(id: string): Promise<Submission>;
-  createSubmission(submission: Omit<Submission, "id" | "createdAt" | "updatedAt">): Promise<Submission>;
-  updateSubmission(id: string, submission: Partial<Submission>): Promise<Submission>;
-  updateSubmissionState(id: string, state: SubmissionState): Promise<Submission>;
-  
+  createSubmission(teamId: number, submission: SubmissionCreate): Promise<Submission>;
+  updateSubmission(submissionId: number, submission: SubmissionUpdate): Promise<Submission>;
+  getSubmissions(hackathonId: number): Promise<Submission[]>;
+
   // Sponsor operations
-  getSponsors(hackathonId: string): Promise<Sponsor[]>;
-  getSponsor(id: string): Promise<Sponsor>;
-  createSponsor(sponsor: Omit<Sponsor, "id" | "createdAt" | "employees">): Promise<Sponsor>;
-  updateSponsor(id: string, sponsor: Partial<Sponsor>): Promise<Sponsor>;
-  inviteSponsorEmployee(sponsorId: string, email: string): Promise<User>;
-  
+  createSponsor(hackathonId: number, sponsor: SponsorCreate): Promise<Sponsor>;
+  getSponsors(hackathonId: number): Promise<Sponsor[]>;
+
   // Prize operations
-  getPrizes(hackathonId: string): Promise<Prize[]>;
-  createPrize(prize: Omit<Prize, "id" | "createdAt">): Promise<Prize>;
-  updatePrize(id: string, prize: Partial<Prize>): Promise<Prize>;
-  deletePrize(id: string): Promise<void>;
-  
+  createPrize(hackathonId: number, prize: PrizeCreate): Promise<Prize>;
+  getPrizes(hackathonId: number): Promise<Prize[]>;
+
   // Issue operations
-  getIssues(hackathonId: string): Promise<Issue[]>;
-  createIssue(issue: Omit<Issue, "id" | "createdAt" | "updatedAt">): Promise<Issue>;
-  updateIssueStatus(id: string, status: Issue["status"]): Promise<Issue>;
+  createIssue(hackathonId: number, issue: IssueCreate): Promise<Issue>;
+  getIssues(hackathonId: number): Promise<Issue[]>;
 }
 

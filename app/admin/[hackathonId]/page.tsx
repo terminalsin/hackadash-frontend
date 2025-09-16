@@ -139,7 +139,7 @@ export default function HackathonDashboard({
                             </h3>
                         </CardHeader>
                         <CardBody className="space-y-3">
-                            <Link href={`/${params.hackathonId}/teams`}>
+                            <Link href={`/admin/${params.hackathonId}/teams`}>
                                 <Button
                                     className="w-full cyber-button"
                                     size="sm"
@@ -149,7 +149,7 @@ export default function HackathonDashboard({
                                 </Button>
                             </Link>
 
-                            <Link href={`/${params.hackathonId}/sponsors`}>
+                            <Link href={`/admin/${params.hackathonId}/sponsors`}>
                                 <Button
                                     className="w-full cyber-button"
                                     variant="bordered"
@@ -160,7 +160,7 @@ export default function HackathonDashboard({
                                 </Button>
                             </Link>
 
-                            <Link href={`/${params.hackathonId}/prizes`}>
+                            <Link href={`/admin/${params.hackathonId}/prizes`}>
                                 <Button
                                     className="w-full cyber-button"
                                     variant="bordered"
@@ -171,7 +171,7 @@ export default function HackathonDashboard({
                                 </Button>
                             </Link>
 
-                            <Link href={`/${params.hackathonId}/issues`}>
+                            <Link href={`/admin/${params.hackathonId}/issues`}>
                                 <Button
                                     className="w-full cyber-button"
                                     variant="bordered"
@@ -256,4 +256,3 @@ export default function HackathonDashboard({
         </div>
     );
 }
-

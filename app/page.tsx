@@ -9,6 +9,7 @@ import { Chip } from "@heroui/chip";
 import { Image } from "@heroui/image";
 import { useHackathons } from "@/hooks/useHackathons";
 import { useRouter } from "next/navigation";
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export default function Home() {
   const { hackathons, loading } = useHackathons();
@@ -60,101 +61,149 @@ export default function Home() {
             HACKADASH
           </h1>
           <p className="text-fluorescent-cyan text-xl mb-2">ELITE HACKATHON COMMAND CENTER</p>
-          <p className="text-outer-space">Select a hackathon to join the digital warfare</p>
+          <SignedIn>
+            <p className="text-outer-space">Select a hackathon to join the digital warfare</p>
+          </SignedIn>
+          <SignedOut>
+            <p className="text-outer-space">Sign in to access hackathons and join the digital warfare</p>
+          </SignedOut>
         </div>
 
-        {/* Hackathons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hackathons.map((hackathon) => (
-            <Card key={hackathon.id} className="hacker-card neon-border">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start w-full">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-white">
-                      {hackathon.title}
-                    </h3>
-                    <p className="text-sm text-fluorescent-cyan">
-                      {hackathon.location}
-                    </p>
+        {/* Authentication-based content */}
+        <SignedIn>
+          {/* Hackathons Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {hackathons.map((hackathon) => (
+              <Card key={hackathon.id} className="hacker-card neon-border">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start w-full">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-bold text-white">
+                        {hackathon.title}
+                      </h3>
+                      <p className="text-sm text-fluorescent-cyan">
+                        {hackathon.location}
+                      </p>
+                    </div>
+                    <Chip
+                      color={hackathon.isStarted ? "success" : "warning"}
+                      variant="shadow"
+                      className="font-mono"
+                      size="sm"
+                    >
+                      {hackathon.isStarted ? "LIVE" : "UPCOMING"}
+                    </Chip>
                   </div>
-                  <Chip
-                    color={hackathon.isStarted ? "success" : "warning"}
-                    variant="shadow"
-                    className="font-mono"
-                    size="sm"
+                </CardHeader>
+
+                <CardBody className="space-y-4">
+                  {hackathon.image && (
+                    <Image
+                      src={hackathon.image}
+                      alt={hackathon.title}
+                      className="w-full h-32 object-cover rounded"
+                    />
+                  )}
+
+                  <p className="text-sm text-outer-space line-clamp-3">
+                    {hackathon.description}
+                  </p>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-outer-space">START:</span>
+                      <span className="text-white font-mono">
+                        {new Date(hackathon.startTime).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-outer-space">END:</span>
+                      <span className="text-white font-mono">
+                        {new Date(hackathon.endTime).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-lg font-bold text-fluorescent-cyan">
+                        {hackathon.teams.length}
+                      </p>
+                      <p className="text-xs text-outer-space">TEAMS</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-white">
+                        {hackathon.sponsors.length}
+                      </p>
+                      <p className="text-xs text-outer-space">SPONSORS</p>
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-hacker-green">
+                        {hackathon.prizes.length}
+                      </p>
+                      <p className="text-xs text-outer-space">PRIZES</p>
+                    </div>
+                  </div>
+
+                  <Button
+                    className="w-full cyber-button"
+                    onPress={() => handleJoinHackathon(hackathon.id)}
+                    disabled={!hackathon.isStarted}
                   >
-                    {hackathon.isStarted ? "LIVE" : "UPCOMING"}
-                  </Chip>
+                    {hackathon.isStarted ? "JOIN HACKATHON" : "NOT STARTED"}
+                  </Button>
+                </CardBody>
+              </Card>
+            ))}
+
+            {hackathons.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <p className="text-outer-space text-lg mb-4">NO HACKATHONS AVAILABLE</p>
+                <p className="text-sm text-outer-space">Check back later for upcoming events</p>
+              </div>
+            )}
+          </div>
+        </SignedIn>
+
+        <SignedOut>
+          {/* Sign-in prompt */}
+          <div className="flex justify-center">
+            <Card className="hacker-card neon-border max-w-2xl">
+              <CardBody className="text-center space-y-6 py-12">
+                <div className="space-y-4">
+                  <h2 className="text-3xl font-bold terminal-text text-hacker-green">
+                    ACCESS RESTRICTED
+                  </h2>
+                  <p className="text-fluorescent-cyan text-lg">
+                    Authentication required to access hackathon data
+                  </p>
+                  <p className="text-outer-space">
+                    Sign in to view available hackathons, join teams, and participate in digital warfare competitions.
+                  </p>
                 </div>
-              </CardHeader>
-
-              <CardBody className="space-y-4">
-                {hackathon.image && (
-                  <Image
-                    src={hackathon.image}
-                    alt={hackathon.title}
-                    className="w-full h-32 object-cover rounded"
-                  />
-                )}
-
-                <p className="text-sm text-outer-space line-clamp-3">
-                  {hackathon.description}
-                </p>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-outer-space">START:</span>
-                    <span className="text-white font-mono">
-                      {new Date(hackathon.startTime).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-outer-space">END:</span>
-                    <span className="text-white font-mono">
-                      {new Date(hackathon.endTime).toLocaleDateString()}
-                    </span>
-                  </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <SignInButton mode="modal">
+                    <Button className="cyber-button" size="lg">
+                      SIGN IN
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button className="cyber-button" variant="bordered" size="lg">
+                      CREATE ACCOUNT
+                    </Button>
+                  </SignUpButton>
                 </div>
-
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-lg font-bold text-fluorescent-cyan">
-                      {hackathon.teams.length}
-                    </p>
-                    <p className="text-xs text-outer-space">TEAMS</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-white">
-                      {hackathon.sponsors.length}
-                    </p>
-                    <p className="text-xs text-outer-space">SPONSORS</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-hacker-green">
-                      {hackathon.prizes.length}
-                    </p>
-                    <p className="text-xs text-outer-space">PRIZES</p>
-                  </div>
+                
+                <div className="text-xs text-outer-space space-y-1">
+                  <p>🔒 Secure authentication powered by Clerk</p>
+                  <p>⚡ Quick setup with Google, GitHub, or email</p>
+                  <p>🛡️ Your data is protected and encrypted</p>
                 </div>
-
-                <Button
-                  className="w-full cyber-button"
-                  onPress={() => handleJoinHackathon(hackathon.id)}
-                  disabled={!hackathon.isStarted}
-                >
-                  {hackathon.isStarted ? "JOIN HACKATHON" : "NOT STARTED"}
-                </Button>
               </CardBody>
             </Card>
-          ))}
-
-          {hackathons.length === 0 && (
-            <div className="col-span-full text-center py-12">
-              <p className="text-outer-space text-lg mb-4">NO HACKATHONS AVAILABLE</p>
-              <p className="text-sm text-outer-space">Check back later for upcoming events</p>
-            </div>
-          )}
-        </div>
+          </div>
+        </SignedOut>
 
         {/* Join Modal */}
         <Modal

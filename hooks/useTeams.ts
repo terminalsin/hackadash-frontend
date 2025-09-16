@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import { Team } from "@/types";
-import { apiService } from "@/services/mockApi";
+import { Team, TeamCreate, TeamUpdate } from "@/types";
+import { apiService } from "@/services";
 
-export function useTeams(hackathonId: string) {
+export function useTeams(hackathonId: number) {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchTeams = async () => {
     if (!hackathonId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -22,10 +22,10 @@ export function useTeams(hackathonId: string) {
     }
   };
 
-  const createTeam = async (team: Omit<Team, "id" | "createdAt" | "updatedAt">) => {
+  const createTeam = async (team: TeamCreate) => {
     try {
       setError(null);
-      const newTeam = await apiService.createTeam(team);
+      const newTeam = await apiService.createTeam(hackathonId, team);
       setTeams(prev => [...prev, newTeam]);
       return newTeam;
     } catch (err) {
@@ -34,7 +34,7 @@ export function useTeams(hackathonId: string) {
     }
   };
 
-  const updateTeam = async (id: string, team: Partial<Team>) => {
+  const updateTeam = async (id: number, team: TeamUpdate) => {
     try {
       setError(null);
       const updatedTeam = await apiService.updateTeam(id, team);
@@ -42,30 +42,6 @@ export function useTeams(hackathonId: string) {
       return updatedTeam;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update team");
-      throw err;
-    }
-  };
-
-  const joinTeam = async (teamId: string, userId: string) => {
-    try {
-      setError(null);
-      const updatedTeam = await apiService.joinTeam(teamId, userId);
-      setTeams(prev => prev.map(t => t.id === teamId ? updatedTeam : t));
-      return updatedTeam;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to join team");
-      throw err;
-    }
-  };
-
-  const leaveTeam = async (teamId: string, userId: string) => {
-    try {
-      setError(null);
-      const updatedTeam = await apiService.leaveTeam(teamId, userId);
-      setTeams(prev => prev.map(t => t.id === teamId ? updatedTeam : t));
-      return updatedTeam;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to leave team");
       throw err;
     }
   };
@@ -81,40 +57,10 @@ export function useTeams(hackathonId: string) {
     refetch: fetchTeams,
     createTeam,
     updateTeam,
-    joinTeam,
-    leaveTeam,
   };
 }
 
-export function useTeam(id: string) {
-  const [team, setTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchTeam = async () => {
-    if (!id) return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await apiService.getTeam(id);
-      setTeam(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch team");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTeam();
-  }, [id]);
-
-  return {
-    team,
-    loading,
-    error,
-    refetch: fetchTeam,
-  };
-}
+// Note: The new API doesn't have a getTeam endpoint
+// Individual team fetching would need to be handled differently
+// or added to the backend API
 

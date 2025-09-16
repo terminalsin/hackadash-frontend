@@ -1,7 +1,28 @@
 import { ApiService } from "./api";
-import { Hackathon, Team, Submission, Sponsor, Prize, Issue, User, UserRole, SubmissionState } from "@/types";
+import {
+  Hackathon,
+  Team,
+  Submission,
+  Sponsor,
+  Prize,
+  Issue,
+  User,
+  UserRole,
+  SubmissionState,
+  HackathonCreate,
+  HackathonUpdate,
+  TeamCreate,
+  TeamUpdate,
+  SubmissionCreate,
+  SubmissionUpdate,
+  SponsorCreate,
+  PrizeCreate,
+  IssueCreate,
+  JoinRequest,
+  InviteRequest
+} from "@/types";
 
-const generateId = () => Math.random().toString(36).substring(2, 15);
+const generateId = () => Math.floor(Math.random() * 1000000);
 
 const generatePinCode = () => Math.random().toString().substring(2, 6).padStart(4, '0');
 
@@ -24,88 +45,87 @@ const mockUsers: User[] = [
 
 const mockSponsors: Sponsor[] = [
   {
-    id: "sponsor1",
+    id: 1,
     name: "TechCorp",
     description: "Leading technology company",
     logo: "https://via.placeholder.com/200x100",
     website: "https://techcorp.com",
-    hackathonId: "hack1",
+    hackathon_id: 1,
     employees: [],
-    createdAt: new Date(),
+    created_at: new Date(),
   },
 ];
 
 const mockTeams: Team[] = [
   {
-    id: "team1",
+    id: 1,
     name: "Code Ninjas",
     description: "Elite developers building the future",
     members: [mockUsers[1]],
-    hackathonId: "hack1",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    hackathon_id: 1,
+    created_at: new Date(),
+    updated_at: new Date(),
   },
 ];
 
 const mockSubmissions: Submission[] = [
   {
-    id: "sub1",
+    id: 1,
     title: "AI-Powered Task Manager",
     description: "Revolutionary task management with AI",
-    githubLink: "https://github.com/team/project",
-    presentationLink: "https://slides.com/presentation",
+    github_link: "https://github.com/team/project",
+    presentation_link: "https://slides.com/presentation",
     state: SubmissionState.READY_TO_DEMO,
-    sponsorsUsed: ["sponsor1"],
-    teamId: "team1",
-    hackathonId: "hack1",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    sponsors_used: [mockSponsors[0]],
+    team_id: 1,
+    created_at: new Date(),
+    updated_at: new Date(),
   },
 ];
 
 const mockPrizes: Prize[] = [
   {
-    id: "prize1",
+    id: 1,
     title: "Best Overall Project",
     description: "The most impressive project overall",
     value: "$5000",
-    hackathonId: "hack1",
-    createdAt: new Date(),
+    hackathon_id: 1,
+    created_at: new Date(),
   },
 ];
 
 const mockIssues: Issue[] = [
   {
-    id: "issue1",
+    id: 1,
     title: "WiFi Connection Problems",
     description: "Intermittent WiFi connectivity issues in the main hall",
-    reportedBy: "user2",
+    reporter_user_id: "user2",
     status: "open",
-    hackathonId: "hack1",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    hackathon_id: 1,
+    created_at: new Date(),
+    updated_at: new Date(),
   },
 ];
 
 const mockHackathons: Hackathon[] = [
   {
-    id: "hack1",
+    id: 1,
     title: "HackTheMatrix 2024",
     description: "48-hour hackathon focused on AI and blockchain",
     image: "https://via.placeholder.com/800x400",
     location: "San Francisco, CA",
-    startTime: new Date("2024-10-15T09:00:00Z"),
-    endTime: new Date("2024-10-17T18:00:00Z"),
-    pinCode: "1337",
-    isStarted: false,
+    start_time: new Date("2024-10-15T09:00:00Z"),
+    end_time: new Date("2024-10-17T18:00:00Z"),
+    pin_code: "1337",
+    is_started: false,
     organisers: [mockUsers[0]],
     sponsors: mockSponsors,
     teams: mockTeams,
     submissions: mockSubmissions,
     prizes: mockPrizes,
     issues: mockIssues,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
   },
 ];
 
@@ -118,311 +138,231 @@ export class MockApiService implements ApiService {
   private prizes = [...mockPrizes];
   private issues = [...mockIssues];
 
-  async getHackathons(): Promise<Hackathon[]> {
-    await this.delay();
-    return this.hackathons;
-  }
-
-  async getHackathon(id: string): Promise<Hackathon> {
-    await this.delay();
-    const hackathon = this.hackathons.find(h => h.id === id);
-    if (!hackathon) throw new Error("Hackathon not found");
-    return hackathon;
-  }
-
-  async createHackathon(hackathon: Omit<Hackathon, "id" | "createdAt" | "updatedAt" | "pinCode" | "isStarted" | "organisers" | "sponsors" | "teams" | "submissions" | "prizes" | "issues">): Promise<Hackathon> {
+  async createHackathon(hackathon: HackathonCreate): Promise<Hackathon> {
     await this.delay();
     const newHackathon: Hackathon = {
-      ...hackathon,
       id: generateId(),
-      pinCode: generatePinCode(),
-      isStarted: false,
+      title: hackathon.title,
+      description: hackathon.description,
+      image: hackathon.image,
+      location: hackathon.location,
+      start_time: new Date(hackathon.start_time),
+      end_time: new Date(hackathon.end_time),
+      pin_code: generatePinCode(),
+      is_started: false,
       organisers: [],
       sponsors: [],
       teams: [],
       submissions: [],
       prizes: [],
       issues: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     this.hackathons.push(newHackathon);
     return newHackathon;
   }
 
-  async updateHackathon(id: string, hackathon: Partial<Hackathon>): Promise<Hackathon> {
+  async getHackathon(id: number): Promise<Hackathon> {
+    await this.delay();
+    const hackathon = this.hackathons.find(h => h.id === id);
+    if (!hackathon) throw new Error("Hackathon not found");
+    return hackathon;
+  }
+
+  async updateHackathon(id: number, hackathon: HackathonUpdate): Promise<Hackathon> {
     await this.delay();
     const index = this.hackathons.findIndex(h => h.id === id);
     if (index === -1) throw new Error("Hackathon not found");
-    
+
+    const updates: Partial<Hackathon> = {
+      updated_at: new Date(),
+    };
+
+    if (hackathon.title) updates.title = hackathon.title;
+    if (hackathon.description) updates.description = hackathon.description;
+    if (hackathon.image) updates.image = hackathon.image;
+    if (hackathon.location) updates.location = hackathon.location;
+    if (hackathon.start_time) updates.start_time = new Date(hackathon.start_time);
+    if (hackathon.end_time) updates.end_time = new Date(hackathon.end_time);
+
     this.hackathons[index] = {
       ...this.hackathons[index],
-      ...hackathon,
-      updatedAt: new Date(),
+      ...updates,
     };
     return this.hackathons[index];
   }
 
-  async startHackathon(id: string): Promise<Hackathon> {
+  async joinHackathon(joinRequest: JoinRequest): Promise<{ message: string }> {
     await this.delay();
-    return this.updateHackathon(id, { isStarted: true });
-  }
-
-  async generatePinCode(hackathonId: string): Promise<string> {
-    await this.delay();
-    const newPin = generatePinCode();
-    await this.updateHackathon(hackathonId, { pinCode: newPin });
-    return newPin;
-  }
-
-  async getUsers(hackathonId: string): Promise<User[]> {
-    await this.delay();
-    return this.users;
-  }
-
-  async inviteUser(hackathonId: string, email: string, role: UserRole): Promise<User> {
-    await this.delay();
-    const newUser: User = {
-      id: generateId(),
-      name: email.split("@")[0],
-      email,
-      role,
-      createdAt: new Date(),
-    };
-    this.users.push(newUser);
-    return newUser;
-  }
-
-  async inviteUserByPin(pinCode: string, user: Omit<User, "id" | "createdAt" | "role">): Promise<User> {
-    await this.delay();
-    const hackathon = this.hackathons.find(h => h.pinCode === pinCode);
+    const hackathon = this.hackathons.find(h => h.pin_code === joinRequest.pin_code);
     if (!hackathon) throw new Error("Invalid pin code");
-    
-    const newUser: User = {
-      ...user,
-      id: generateId(),
-      role: UserRole.GUEST,
-      createdAt: new Date(),
-    };
-    this.users.push(newUser);
-    return newUser;
+    return { message: "Successfully joined hackathon" };
   }
 
-  async getTeams(hackathonId: string): Promise<Team[]> {
+  async inviteUser(hackathonId: number, invite: InviteRequest): Promise<{ message: string }> {
     await this.delay();
-    return this.teams.filter(t => t.hackathonId === hackathonId);
+    const hackathon = this.hackathons.find(h => h.id === hackathonId);
+    if (!hackathon) throw new Error("Hackathon not found");
+    return { message: "User invited successfully" };
   }
 
-  async getTeam(id: string): Promise<Team> {
+  async getTeams(hackathonId: number): Promise<Team[]> {
     await this.delay();
-    const team = this.teams.find(t => t.id === id);
-    if (!team) throw new Error("Team not found");
-    return team;
+    return this.teams.filter(t => t.hackathon_id === hackathonId);
   }
 
-  async createTeam(team: Omit<Team, "id" | "createdAt" | "updatedAt">): Promise<Team> {
+  async createTeam(hackathonId: number, team: TeamCreate): Promise<Team> {
     await this.delay();
     const newTeam: Team = {
-      ...team,
       id: generateId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      name: team.name,
+      description: team.description,
+      members: [],
+      hackathon_id: hackathonId,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     this.teams.push(newTeam);
     return newTeam;
   }
 
-  async updateTeam(id: string, team: Partial<Team>): Promise<Team> {
+  async updateTeam(teamId: number, team: TeamUpdate): Promise<Team> {
     await this.delay();
-    const index = this.teams.findIndex(t => t.id === id);
+    const index = this.teams.findIndex(t => t.id === teamId);
     if (index === -1) throw new Error("Team not found");
-    
+
+    const updates: Partial<Team> = {
+      updated_at: new Date(),
+    };
+
+    if (team.name) updates.name = team.name;
+    if (team.description) updates.description = team.description;
+
     this.teams[index] = {
       ...this.teams[index],
-      ...team,
-      updatedAt: new Date(),
+      ...updates,
     };
     return this.teams[index];
   }
 
-  async joinTeam(teamId: string, userId: string): Promise<Team> {
+  async createSubmission(teamId: number, submission: SubmissionCreate): Promise<Submission> {
     await this.delay();
-    const team = await this.getTeam(teamId);
-    const user = this.users.find(u => u.id === userId);
-    if (!user) throw new Error("User not found");
-    
-    if (!team.members.find(m => m.id === userId)) {
-      team.members.push(user);
-      return this.updateTeam(teamId, { members: team.members });
-    }
-    return team;
-  }
+    const team = this.teams.find(t => t.id === teamId);
+    if (!team) throw new Error("Team not found");
 
-  async leaveTeam(teamId: string, userId: string): Promise<Team> {
-    await this.delay();
-    const team = await this.getTeam(teamId);
-    team.members = team.members.filter(m => m.id !== userId);
-    return this.updateTeam(teamId, { members: team.members });
-  }
+    const sponsors = submission.sponsor_ids
+      ? this.sponsors.filter(s => submission.sponsor_ids!.includes(s.id))
+      : [];
 
-  async getSubmissions(hackathonId: string): Promise<Submission[]> {
-    await this.delay();
-    return this.submissions.filter(s => s.hackathonId === hackathonId);
-  }
-
-  async getSubmission(id: string): Promise<Submission> {
-    await this.delay();
-    const submission = this.submissions.find(s => s.id === id);
-    if (!submission) throw new Error("Submission not found");
-    return submission;
-  }
-
-  async createSubmission(submission: Omit<Submission, "id" | "createdAt" | "updatedAt">): Promise<Submission> {
-    await this.delay();
     const newSubmission: Submission = {
-      ...submission,
       id: generateId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      title: submission.title,
+      description: submission.description,
+      github_link: submission.github_link,
+      presentation_link: submission.presentation_link,
+      state: SubmissionState.DRAFT,
+      sponsors_used: sponsors,
+      team_id: teamId,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     this.submissions.push(newSubmission);
     return newSubmission;
   }
 
-  async updateSubmission(id: string, submission: Partial<Submission>): Promise<Submission> {
+  async updateSubmission(submissionId: number, submission: SubmissionUpdate): Promise<Submission> {
     await this.delay();
-    const index = this.submissions.findIndex(s => s.id === id);
+    const index = this.submissions.findIndex(s => s.id === submissionId);
     if (index === -1) throw new Error("Submission not found");
-    
+
+    const updates: Partial<Submission> = {
+      updated_at: new Date(),
+    };
+
+    if (submission.title) updates.title = submission.title;
+    if (submission.description) updates.description = submission.description;
+    if (submission.github_link) updates.github_link = submission.github_link;
+    if (submission.presentation_link) updates.presentation_link = submission.presentation_link;
+    if (submission.sponsor_ids) {
+      updates.sponsors_used = this.sponsors.filter(s => submission.sponsor_ids!.includes(s.id));
+    }
+
     this.submissions[index] = {
       ...this.submissions[index],
-      ...submission,
-      updatedAt: new Date(),
+      ...updates,
     };
     return this.submissions[index];
   }
 
-  async updateSubmissionState(id: string, state: SubmissionState): Promise<Submission> {
+  async getSubmissions(hackathonId: number): Promise<Submission[]> {
     await this.delay();
-    return this.updateSubmission(id, { state });
+    return this.submissions.filter(s => {
+      const team = this.teams.find(t => t.id === s.team_id);
+      return team && team.hackathon_id === hackathonId;
+    });
   }
 
-  async getSponsors(hackathonId: string): Promise<Sponsor[]> {
-    await this.delay();
-    return this.sponsors.filter(s => s.hackathonId === hackathonId);
-  }
-
-  async getSponsor(id: string): Promise<Sponsor> {
-    await this.delay();
-    const sponsor = this.sponsors.find(s => s.id === id);
-    if (!sponsor) throw new Error("Sponsor not found");
-    return sponsor;
-  }
-
-  async createSponsor(sponsor: Omit<Sponsor, "id" | "createdAt" | "employees">): Promise<Sponsor> {
+  async createSponsor(hackathonId: number, sponsor: SponsorCreate): Promise<Sponsor> {
     await this.delay();
     const newSponsor: Sponsor = {
-      ...sponsor,
       id: generateId(),
+      name: sponsor.name,
+      description: sponsor.description,
+      logo: sponsor.logo,
+      website: sponsor.website,
+      hackathon_id: hackathonId,
       employees: [],
-      createdAt: new Date(),
+      created_at: new Date(),
     };
     this.sponsors.push(newSponsor);
     return newSponsor;
   }
 
-  async updateSponsor(id: string, sponsor: Partial<Sponsor>): Promise<Sponsor> {
+  async getSponsors(hackathonId: number): Promise<Sponsor[]> {
     await this.delay();
-    const index = this.sponsors.findIndex(s => s.id === id);
-    if (index === -1) throw new Error("Sponsor not found");
-    
-    this.sponsors[index] = {
-      ...this.sponsors[index],
-      ...sponsor,
-    };
-    return this.sponsors[index];
+    return this.sponsors.filter(s => s.hackathon_id === hackathonId);
   }
 
-  async inviteSponsorEmployee(sponsorId: string, email: string): Promise<User> {
-    await this.delay();
-    const sponsor = await this.getSponsor(sponsorId);
-    const newUser: User = {
-      id: generateId(),
-      name: email.split("@")[0],
-      email,
-      role: UserRole.SPONSOR,
-      companyId: sponsorId,
-      createdAt: new Date(),
-    };
-    
-    this.users.push(newUser);
-    sponsor.employees.push(newUser);
-    return newUser;
-  }
-
-  async getPrizes(hackathonId: string): Promise<Prize[]> {
-    await this.delay();
-    return this.prizes.filter(p => p.hackathonId === hackathonId);
-  }
-
-  async createPrize(prize: Omit<Prize, "id" | "createdAt">): Promise<Prize> {
+  async createPrize(hackathonId: number, prize: PrizeCreate): Promise<Prize> {
     await this.delay();
     const newPrize: Prize = {
-      ...prize,
       id: generateId(),
-      createdAt: new Date(),
+      title: prize.title,
+      description: prize.description,
+      value: prize.value,
+      sponsor_id: prize.sponsor_id,
+      hackathon_id: hackathonId,
+      created_at: new Date(),
     };
     this.prizes.push(newPrize);
     return newPrize;
   }
 
-  async updatePrize(id: string, prize: Partial<Prize>): Promise<Prize> {
+  async getPrizes(hackathonId: number): Promise<Prize[]> {
     await this.delay();
-    const index = this.prizes.findIndex(p => p.id === id);
-    if (index === -1) throw new Error("Prize not found");
-    
-    this.prizes[index] = {
-      ...this.prizes[index],
-      ...prize,
-    };
-    return this.prizes[index];
+    return this.prizes.filter(p => p.hackathon_id === hackathonId);
   }
 
-  async deletePrize(id: string): Promise<void> {
-    await this.delay();
-    const index = this.prizes.findIndex(p => p.id === id);
-    if (index === -1) throw new Error("Prize not found");
-    this.prizes.splice(index, 1);
-  }
-
-  async getIssues(hackathonId: string): Promise<Issue[]> {
-    await this.delay();
-    return this.issues.filter(i => i.hackathonId === hackathonId);
-  }
-
-  async createIssue(issue: Omit<Issue, "id" | "createdAt" | "updatedAt">): Promise<Issue> {
+  async createIssue(hackathonId: number, issue: IssueCreate): Promise<Issue> {
     await this.delay();
     const newIssue: Issue = {
-      ...issue,
       id: generateId(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      title: issue.title,
+      description: issue.description,
+      reporter_user_id: "current-user", // In a real app, this would come from auth
+      status: "open",
+      hackathon_id: hackathonId,
+      created_at: new Date(),
+      updated_at: new Date(),
     };
     this.issues.push(newIssue);
     return newIssue;
   }
 
-  async updateIssueStatus(id: string, status: Issue["status"]): Promise<Issue> {
+  async getIssues(hackathonId: number): Promise<Issue[]> {
     await this.delay();
-    const index = this.issues.findIndex(i => i.id === id);
-    if (index === -1) throw new Error("Issue not found");
-    
-    this.issues[index] = {
-      ...this.issues[index],
-      status,
-      updatedAt: new Date(),
-    };
-    return this.issues[index];
+    return this.issues.filter(i => i.hackathon_id === hackathonId);
   }
 
   private async delay(ms: number = 300): Promise<void> {

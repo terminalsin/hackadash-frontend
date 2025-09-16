@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { Card, CardBody } from "@heroui/card";
 import { Chip } from "@heroui/chip";
 import { Button } from "@heroui/button";
@@ -8,15 +8,17 @@ import { Tabs, Tab } from "@heroui/tabs";
 import { useHackathon } from "@/hooks/useHackathons";
 import { useRouter, usePathname } from "next/navigation";
 import { Hackathon } from "@/types";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 export default function UserHackathonLayout({
     children,
     params,
 }: {
     children: React.ReactNode;
-    params: { hackathonId: string };
+    params: Promise<{ hackathonId: string }>;
 }) {
-    const { hackathon, loading, error } = useHackathon(params.hackathonId);
+    const { hackathonId } = use(params);
+    const { hackathon, loading, error } = useHackathon(parseInt(hackathonId));
     const router = useRouter();
     const pathname = usePathname();
 
@@ -29,11 +31,11 @@ export default function UserHackathonLayout({
 
     const handleTabChange = (key: string) => {
         if (key === 'teams') {
-            router.push(`/${params.hackathonId}/teams`);
+            router.push(`/${hackathonId}/teams`);
         } else if (key === 'team-details') {
-            router.push(`/${params.hackathonId}/team-details`);
+            router.push(`/${hackathonId}/team-details`);
         } else if (key === 'leaderboard') {
-            router.push(`/${params.hackathonId}/leaderboard`);
+            router.push(`/${hackathonId}/leaderboard`);
         }
     };
 
@@ -67,8 +69,9 @@ export default function UserHackathonLayout({
     }
 
     return (
-        <div className="matrix-bg min-h-screen">
-            {/* Hackathon Header */}
+        <ProtectedRoute>
+            <div className="matrix-bg min-h-screen">
+                {/* Hackathon Header */}
             <div className="border-b border-hacker-green bg-black/50 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between mb-4">
@@ -85,6 +88,14 @@ export default function UserHackathonLayout({
                                     {Math.ceil((new Date(hackathon.endTime).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} DAYS
                                 </p>
                             </div>
+                            <Button
+                                className="cyber-button"
+                                size="sm"
+                                variant="bordered"
+                                onPress={() => router.push(`/admin/${hackathonId}/`)}
+                            >
+                                ADMIN
+                            </Button>
                             <Chip
                                 color={hackathon.isStarted ? "success" : "warning"}
                                 variant="shadow"
@@ -119,5 +130,6 @@ export default function UserHackathonLayout({
 
             {children}
         </div>
+        </ProtectedRoute>
     );
 }
