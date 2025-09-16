@@ -7,7 +7,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     try {
-        const hackathonId = parseInt(params.id);
+        const hackathonId = parseInt((await params).id);
         const sponsors = await DataStore.getSponsors();
         const users = await DataStore.getUsers();
 

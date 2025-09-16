@@ -113,12 +113,21 @@ export default function TeamsPage({
                         )}
                     </div>
                     {!isUserInTeam && (
-                        <Button
-                            className="cyber-button"
-                            onPress={openCreateModal}
-                        >
-                            CREATE TEAM
-                        </Button>
+                        <div className="flex gap-3">
+                            <Button
+                                className="cyber-button"
+                                variant="bordered"
+                                onPress={() => router.push(`/${resolvedParams.hackathonId}/match`)}
+                            >
+                                MATCH WITH TEAM
+                            </Button>
+                            <Button
+                                className="cyber-button"
+                                onPress={openCreateModal}
+                            >
+                                CREATE TEAM
+                            </Button>
+                        </div>
                     )}
                     {isUserInTeam && (
                         <Button
@@ -156,9 +165,6 @@ export default function TeamsPage({
                             </CardHeader>
 
                             <CardBody className="space-y-4">
-                                <p className="text-sm text-outer-space line-clamp-2">
-                                    {team.description}
-                                </p>
 
                                 <Divider />
 
@@ -195,22 +201,6 @@ export default function TeamsPage({
                                 </div>
 
                                 <Divider />
-
-                                {/* Team Stats */}
-                                <div className="grid grid-cols-2 gap-4 text-center">
-                                    <div>
-                                        <p className="text-sm font-bold text-fluorescent-cyan">
-                                            {new Date(team.created_at).toLocaleDateString()}
-                                        </p>
-                                        <p className="text-xs text-outer-space">FORMED</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-white">
-                                            {team.members.length}
-                                        </p>
-                                        <p className="text-xs text-outer-space">MEMBERS</p>
-                                    </div>
-                                </div>
 
                                 <Button
                                     className="w-full cyber-button"

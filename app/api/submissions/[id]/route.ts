@@ -28,6 +28,7 @@ export async function PUT(
         if (body.description) updates.description = body.description;
         if (body.github_link) updates.github_link = body.github_link;
         if (body.presentation_link) updates.presentation_link = body.presentation_link;
+        if (body.state) updates.state = body.state;
 
         if (body.sponsor_ids) {
             const sponsors = await DataStore.getSponsors();

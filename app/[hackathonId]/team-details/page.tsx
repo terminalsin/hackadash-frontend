@@ -24,11 +24,12 @@ export default function TeamDetailsPage({
 }) {
     const resolvedParams = use(params);
     const { teams, loading: teamsLoading, leaveTeam } = useTeams(parseInt(resolvedParams.hackathonId));
-    const { submissions, loading: submissionsLoading, createSubmission, updateSubmission, deleteSubmission } = useSubmissions(parseInt(resolvedParams.hackathonId));
+    const { submissions, loading: submissionsLoading, createSubmission, updateSubmission, deleteSubmission, updateSubmissionState } = useSubmissions(parseInt(resolvedParams.hackathonId));
     const { sponsors } = useSponsors(parseInt(resolvedParams.hackathonId));
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
     const { isOpen: isLeaveOpen, onOpen: onLeaveOpen, onClose: onLeaveClose } = useDisclosure();
+    const { isOpen: isStateOpen, onOpen: onStateOpen, onClose: onStateClose } = useDisclosure();
     const { user } = useUser();
 
     const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
@@ -41,6 +42,7 @@ export default function TeamDetailsPage({
         presentationLink: "",
         sponsorsUsed: [] as string[],
     });
+    const [selectedState, setSelectedState] = useState<SubmissionState>(SubmissionState.DRAFT);
 
     // Find user's team based on authenticated user
     useEffect(() => {
@@ -160,6 +162,25 @@ export default function TeamDetailsPage({
         }
     };
 
+    const handleUpdateState = async () => {
+        if (!teamSubmission) return;
+
+        try {
+            const updatedSubmission = await updateSubmissionState(teamSubmission.id, selectedState);
+            setTeamSubmission(updatedSubmission);
+            onStateClose();
+        } catch (error) {
+            console.error("Failed to update submission state:", error);
+        }
+    };
+
+    const openStateModal = () => {
+        if (teamSubmission) {
+            setSelectedState(teamSubmission.state);
+            onStateOpen();
+        }
+    };
+
     const getStateColor = (state: SubmissionState) => {
         switch (state) {
             case SubmissionState.DRAFT:
@@ -241,7 +262,7 @@ export default function TeamDetailsPage({
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Team Members */}
                             <div>
-                                <h3 className="text-lg font-semibold text-hacker-green mb-3">TEAM MEMBERS</h3>
+                                <h3 className="text-lg font-semibold text-hacker-green-dark mb-3">TEAM MEMBERS</h3>
                                 <div className="space-y-2">
                                     {currentTeam.members.map((member) => (
                                         <div key={member.id} className="flex items-center gap-3 p-2 border border-outer-space rounded">
@@ -268,7 +289,7 @@ export default function TeamDetailsPage({
 
                             {/* Team Stats */}
                             <div>
-                                <h3 className="text-lg font-semibold text-hacker-green mb-3">TEAM STATS</h3>
+                                <h3 className="text-lg font-semibold text-hacker-green-dark mb-3">TEAM STATS</h3>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
                                         <span className="text-outer-space">Members:</span>
@@ -300,7 +321,7 @@ export default function TeamDetailsPage({
                 <Card className="hacker-card neon-border">
                     <CardHeader>
                         <div className="flex justify-between items-center w-full">
-                            <h2 className="text-xl font-bold text-hacker-green terminal-text">
+                            <h2 className="text-xl font-bold text-hacker-green-dark terminal-text">
                                 PROJECT SUBMISSION
                             </h2>
                             {teamSubmission ? (
@@ -314,6 +335,15 @@ export default function TeamDetailsPage({
                                                 onPress={openEditMode}
                                             >
                                                 EDIT
+                                            </Button>
+                                            <Button
+                                                className="cyber-button"
+                                                variant="bordered"
+                                                size="sm"
+                                                color="secondary"
+                                                onPress={openStateModal}
+                                            >
+                                                UPDATE STATE
                                             </Button>
                                             <Button
                                                 className="cyber-button"
@@ -687,6 +717,78 @@ export default function TeamDetailsPage({
                                         onPress={handleLeaveTeam}
                                     >
                                         LEAVE TEAM
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+
+                {/* Update State Modal */}
+                <Modal
+                    isOpen={isStateOpen}
+                    onClose={onStateClose}
+                    className="hacker-card"
+                    backdrop="blur"
+                    size="md"
+                >
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">
+                                    <h2 className="text-xl font-bold terminal-text text-hacker-green">
+                                        UPDATE SUBMISSION STATE
+                                    </h2>
+                                </ModalHeader>
+                                <ModalBody>
+                                    <p className="text-outer-space mb-4">
+                                        Select the current state of your project submission:
+                                    </p>
+                                    <Select
+                                        label="Submission State"
+                                        placeholder="Select state"
+                                        selectedKeys={[selectedState]}
+                                        onSelectionChange={(keys) => {
+                                            const key = Array.from(keys)[0] as SubmissionState;
+                                            setSelectedState(key);
+                                        }}
+                                        className="font-mono"
+                                        variant="bordered"
+                                    >
+                                        <SelectItem key={SubmissionState.DRAFT} textValue="Draft">
+                                            <div className="flex items-center gap-2">
+                                                <Chip size="sm" color="warning" variant="flat">DRAFT</Chip>
+                                                <span className="text-sm">Still working on the project</span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem key={SubmissionState.READY_TO_DEMO} textValue="Ready to Demo">
+                                            <div className="flex items-center gap-2">
+                                                <Chip size="sm" color="primary" variant="flat">READY TO DEMO</Chip>
+                                                <span className="text-sm">Project is complete and ready for presentation</span>
+                                            </div>
+                                        </SelectItem>
+                                        <SelectItem key={SubmissionState.PRESENTED} textValue="Presented">
+                                            <div className="flex items-center gap-2">
+                                                <Chip size="sm" color="success" variant="flat">PRESENTED</Chip>
+                                                <span className="text-sm">Project has been presented to judges</span>
+                                            </div>
+                                        </SelectItem>
+                                    </Select>
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button
+                                        className="cyber-button"
+                                        variant="bordered"
+                                        onPress={onClose}
+                                    >
+                                        CANCEL
+                                    </Button>
+                                    <Button
+                                        className="cyber-button"
+                                        onPress={handleUpdateState}
+                                        disabled={!selectedState}
+                                    >
+                                        UPDATE STATE
                                     </Button>
                                 </ModalFooter>
                             </>

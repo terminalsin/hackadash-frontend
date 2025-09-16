@@ -15,7 +15,7 @@ export async function POST(
             );
         }
 
-        const teamId = parseInt(params.id);
+        const teamId = parseInt((await params).id);
         const teams = await DataStore.getTeams();
         const teamIndex = teams.findIndex(t => t.id === teamId);
 
@@ -28,9 +28,17 @@ export async function POST(
 
         const team = teams[teamIndex];
 
+        // Check if team has members array
+        if (!team.members || team.members.length === 0) {
+            return NextResponse.json(
+                { error: 'Team is empty' },
+                { status: 400 }
+            );
+        }
+
         // Find the user in the team
         const memberIndex = team.members.findIndex(member =>
-            member.id === userId
+            member.id.toString() === userId
         );
 
         if (memberIndex === -1) {

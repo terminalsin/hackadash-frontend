@@ -110,49 +110,7 @@ export default function IssuesPage({
     return (
         <div className="p-6">
             <div className="max-w-7xl mx-auto space-y-6">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold terminal-text text-hacker-green">
-                        ISSUE TRACKER
-                    </h1>
-                    <p className="text-outer-space">Track and monitor hackathon issues and support requests</p>
-                </div>
 
-                {/* Stats Overview */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                    <Card className="hacker-card">
-                        <CardBody className="text-center py-4">
-                            <p className="text-2xl font-bold text-warning-red font-mono">
-                                {issues.filter(i => i.status === "open").length}
-                            </p>
-                            <p className="text-xs text-outer-space">OPEN ISSUES</p>
-                        </CardBody>
-                    </Card>
-                    <Card className="hacker-card">
-                        <CardBody className="text-center py-4">
-                            <p className="text-2xl font-bold text-warning font-mono">
-                                {issues.filter(i => i.status === "in_progress").length}
-                            </p>
-                            <p className="text-xs text-outer-space">IN PROGRESS</p>
-                        </CardBody>
-                    </Card>
-                    <Card className="hacker-card">
-                        <CardBody className="text-center py-4">
-                            <p className="text-2xl font-bold text-hacker-green font-mono">
-                                {issues.filter(i => i.status === "resolved").length}
-                            </p>
-                            <p className="text-xs text-outer-space">RESOLVED</p>
-                        </CardBody>
-                    </Card>
-                    <Card className="hacker-card">
-                        <CardBody className="text-center py-4">
-                            <p className="text-2xl font-bold text-fluorescent-cyan font-mono">
-                                {issues.length}
-                            </p>
-                            <p className="text-xs text-outer-space">TOTAL ISSUES</p>
-                        </CardBody>
-                    </Card>
-                </div>
 
                 {/* Filter Tabs */}
                 <Tabs
@@ -213,9 +171,6 @@ export default function IssuesPage({
                                                         {priority.toUpperCase()} PRIORITY
                                                     </Chip>
                                                 </div>
-                                                <p className="text-sm text-outer-space">
-                                                    Issue #{issue.id} • Reported {daysSinceCreated} day{daysSinceCreated !== 1 ? 's' : ''} ago
-                                                </p>
                                             </div>
                                         </div>
                                     </CardHeader>
@@ -227,7 +182,7 @@ export default function IssuesPage({
 
                                             <Divider />
 
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                            <div className="text-sm">
                                                 <div>
                                                     <p className="text-hacker-green font-semibold mb-1">STATUS</p>
                                                     <Chip
@@ -238,44 +193,8 @@ export default function IssuesPage({
                                                         {getStatusText(issue.status)}
                                                     </Chip>
                                                 </div>
-                                                <div>
-                                                    <p className="text-hacker-green font-semibold mb-1">CREATED</p>
-                                                    <p className="text-outer-space font-mono">
-                                                        {new Date(issue.created_at).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-hacker-green font-semibold mb-1">LAST UPDATED</p>
-                                                    <p className="text-outer-space font-mono">
-                                                        {new Date(issue.updated_at).toLocaleDateString()}
-                                                    </p>
-                                                </div>
                                             </div>
 
-                                            {/* Progress Indicator */}
-                                            <div className="mt-4">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <p className="text-hacker-green font-semibold text-sm">PROGRESS</p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`w-3 h-3 rounded-full ${issue.status === "open" ? "bg-danger" : "bg-success"}`}></div>
-                                                    <div className="flex-1 h-1 bg-outer-space rounded">
-                                                        <div
-                                                            className={`h-full rounded transition-all duration-300 ${issue.status === "resolved" ? "bg-success w-full" :
-                                                                    issue.status === "in_progress" ? "bg-warning w-1/2" :
-                                                                        "bg-danger w-1/4"
-                                                                }`}
-                                                        ></div>
-                                                    </div>
-                                                    <div className={`w-3 h-3 rounded-full ${issue.status === "in_progress" || issue.status === "resolved" ? "bg-warning" : "bg-outer-space"}`}></div>
-                                                    <div className={`w-3 h-3 rounded-full ${issue.status === "resolved" ? "bg-success" : "bg-outer-space"}`}></div>
-                                                </div>
-                                                <div className="flex justify-between text-xs text-outer-space mt-1">
-                                                    <span>REPORTED</span>
-                                                    <span>IN PROGRESS</span>
-                                                    <span>RESOLVED</span>
-                                                </div>
-                                            </div>
                                         </div>
                                     </CardBody>
                                 </Card>

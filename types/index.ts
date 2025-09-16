@@ -102,6 +102,7 @@ export interface SubmissionUpdate {
   github_link?: string;
   presentation_link?: string;
   sponsor_ids?: number[];
+  state?: SubmissionState;
 }
 
 export interface SponsorCreate {

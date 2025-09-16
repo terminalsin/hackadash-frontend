@@ -62,7 +62,7 @@ export async function POST(
         // Check if user is already in any team for this hackathon
         const userTeam = teams.find(t =>
             t.hackathon_id === team.hackathon_id &&
-            t.members && t.members.some(m => m.id === userId)
+            t.members && t.members.some(m => m.id.toString() === userId)
         );
 
         if (userTeam) {

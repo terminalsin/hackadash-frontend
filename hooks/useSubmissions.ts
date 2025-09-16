@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Submission, SubmissionCreate, SubmissionUpdate } from "@/types";
+import { Submission, SubmissionCreate, SubmissionUpdate, SubmissionState } from "@/types";
 import { apiService } from "@/services";
 
 export function useSubmissions(hackathonId: number) {
@@ -58,6 +58,18 @@ export function useSubmissions(hackathonId: number) {
     }
   };
 
+  const updateSubmissionState = async (id: number, state: SubmissionState) => {
+    try {
+      setError(null);
+      const updatedSubmission = await apiService.updateSubmission(id, { state });
+      setSubmissions(prev => prev.map(s => s.id === id ? updatedSubmission : s));
+      return updatedSubmission;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update submission state");
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchSubmissions();
   }, [hackathonId]);
@@ -70,6 +82,7 @@ export function useSubmissions(hackathonId: number) {
     createSubmission,
     updateSubmission,
     deleteSubmission,
+    updateSubmissionState,
   };
 }
 
