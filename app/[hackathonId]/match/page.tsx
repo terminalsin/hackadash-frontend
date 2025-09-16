@@ -194,14 +194,18 @@ export default function MatchPage({
         <div className="p-6 min-h-screen">
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold terminal-text text-hacker-green mb-2">
-                        TEAM MATCHER
-                    </h1>
-                    <p className="text-outer-space">
-                        Connect your GitHub profile to find the perfect team match
-                    </p>
-                </div>
+                {!matchedTeam && (
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl font-bold terminal-text text-hacker-green mb-2">
+                            TEAM MATCHER
+                        </h1>
+                        <p className="text-outer-space">
+                            Connect your GitHub profile to find the perfect team match
+                        </p>
+                    </div>
+                )
+                }
+
 
                 {!githubProfile && !isLoading && (
                     <Card className="hacker-card neon-border">
@@ -347,10 +351,10 @@ export default function MatchPage({
                                             <div
                                                 key={team.id}
                                                 className={`absolute inset-0 bg-gradient-to-br from-gray-900 to-black border border-hacker-green rounded-lg p-4 transition-all duration-500 ${index < currentCardIndex
-                                                        ? 'transform rotate-12 translate-x-32 opacity-0'
-                                                        : index === currentCardIndex
-                                                            ? 'transform scale-105 z-10 neon-border'
-                                                            : 'transform scale-95 opacity-70'
+                                                    ? 'transform rotate-12 translate-x-32 opacity-0'
+                                                    : index === currentCardIndex
+                                                        ? 'transform scale-105 z-10 neon-border'
+                                                        : 'transform scale-95 opacity-70'
                                                     }`}
                                                 style={{
                                                     zIndex: availableTeams.length - index,

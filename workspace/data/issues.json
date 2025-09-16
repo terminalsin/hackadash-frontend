@@ -34,9 +34,9 @@
     "title": "Wifi is down",
     "description": "Please fix!",
     "reporter_user_id": "current-user",
-    "status": "open",
+    "status": "resolved",
     "hackathon_id": 1,
     "created_at": "2025-09-16T22:08:58.981Z",
-    "updated_at": "2025-09-16T22:09:16.452Z"
+    "updated_at": "2025-09-16T23:19:07.109Z"
   }
 ]
