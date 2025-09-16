@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "title": "AI-Powered Task Manager",
+    "description": "Revolutionary task management application powered by machine learning algorithms. Uses natural language processing to automatically categorize and prioritize tasks based on context and urgency. test",
+    "github_link": "https://github.com/team/ai-task-manager",
+    "presentation_link": "https://slides.com/ai-task-manager-demo",
+    "state": "ready_to_demo",
+    "sponsor_ids": [
+      1,
+      3
+    ],
+    "team_id": 1,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2025-09-16T21:45:33.591Z",
+    "sponsors_used": [
+      {
+        "id": 1,
+        "name": "TechCorp",
+        "description": "Leading technology company specializing in cloud infrastructure and AI solutions. We provide cutting-edge APIs and development tools for modern applications.",
+        "logo": "https://via.placeholder.com/200x100/00ff00/000000?text=TechCorp",
+        "website": "https://techcorp.com",
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "id": 3,
+        "name": "AI Ventures",
+        "description": "Machine learning and artificial intelligence company providing pre-trained models, ML APIs, and computer vision solutions for innovative startups.",
+        "logo": "https://via.placeholder.com/200x100/ff6600/ffffff?text=AI+Ventures",
+        "website": "https://aiventures.com",
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "CloudSync Dashboard",
+    "description": "Real-time analytics dashboard for cloud infrastructure monitoring. Provides insights into resource usage, cost optimization, and performance metrics across multiple cloud providers.",
+    "github_link": "https://github.com/team/cloudsync-dashboard",
+    "presentation_link": "https://demo.cloudsync.app",
+    "state": "presented",
+    "sponsor_ids": [
+      2
+    ],
+    "team_id": 2,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "title": "Smart Code Assistant",
+    "description": "AI-powered code completion and bug detection tool that integrates with popular IDEs. Uses machine learning to suggest optimizations and catch potential issues before deployment.",
+    "github_link": "https://github.com/team/smart-code-assistant",
+    "state": "draft",
+    "sponsor_ids": [
+      1,
+      3
+    ],
+    "team_id": 3,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  }
+]

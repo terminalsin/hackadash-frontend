@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -14,11 +15,17 @@ import Link from "next/link";
 export default function HackathonDashboard({
     params,
 }: {
-    params: { hackathonId: string };
+    params: Promise<{ hackathonId: string }>;
 }) {
-    const { teams, loading: teamsLoading } = useTeams(params.hackathonId);
-    const { submissions, loading: submissionsLoading } = useSubmissions(params.hackathonId);
-    const { issues, loading: issuesLoading } = useIssues(params.hackathonId);
+    const [hackathonId, setHackathonId] = React.useState<string>("");
+
+    React.useEffect(() => {
+        params.then(p => setHackathonId(p.hackathonId));
+    }, [params]);
+
+    const { teams, loading: teamsLoading } = useTeams(hackathonId);
+    const { submissions, loading: submissionsLoading } = useSubmissions(hackathonId);
+    const { issues, loading: issuesLoading } = useIssues(hackathonId);
 
     const submissionStats = {
         draft: submissions.filter(s => s.state === SubmissionState.DRAFT).length,
@@ -35,14 +42,6 @@ export default function HackathonDashboard({
     return (
         <div className="p-6">
             <div className="max-w-7xl mx-auto space-y-6">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold terminal-text glitch" data-text="COMMAND CENTER">
-                        COMMAND CENTER
-                    </h1>
-                    <p className="text-fluorescent-cyan mt-2">HACKATHON CONTROL INTERFACE</p>
-                </div>
-
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* Submission Stats */}

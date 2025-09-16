@@ -46,6 +46,18 @@ export function useSubmissions(hackathonId: number) {
     }
   };
 
+  const deleteSubmission = async (id: number) => {
+    try {
+      setError(null);
+      await apiService.deleteSubmission(id);
+      setSubmissions(prev => prev.filter(s => s.id !== id));
+      return { message: "Submission deleted successfully" };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete submission");
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchSubmissions();
   }, [hackathonId]);
@@ -57,6 +69,7 @@ export function useSubmissions(hackathonId: number) {
     refetch: fetchSubmissions,
     createSubmission,
     updateSubmission,
+    deleteSubmission,
   };
 }
 

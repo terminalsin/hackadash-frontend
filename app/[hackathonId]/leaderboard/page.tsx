@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Chip } from "@heroui/chip";
@@ -22,11 +22,12 @@ interface TeamScore {
 export default function LeaderboardPage({
     params,
 }: {
-    params: { hackathonId: string };
+    params: Promise<{ hackathonId: string }>;
 }) {
-    const { teams, loading: teamsLoading } = useTeams(params.hackathonId);
-    const { submissions, loading: submissionsLoading } = useSubmissions(params.hackathonId);
-    const { prizes, loading: prizesLoading } = usePrizes(params.hackathonId);
+    const resolvedParams = use(params);
+    const { teams, loading: teamsLoading } = useTeams(parseInt(resolvedParams.hackathonId));
+    const { submissions, loading: submissionsLoading } = useSubmissions(parseInt(resolvedParams.hackathonId));
+    const { prizes, loading: prizesLoading } = usePrizes(parseInt(resolvedParams.hackathonId));
     const [selectedTab, setSelectedTab] = useState("overall");
     const [teamScores, setTeamScores] = useState<TeamScore[]>([]);
 
@@ -34,7 +35,7 @@ export default function LeaderboardPage({
     useEffect(() => {
         if (teams.length > 0 && submissions.length > 0) {
             const scores: TeamScore[] = teams.map((team) => {
-                const teamSubmission = submissions.find(s => s.teamId === team.id);
+                const teamSubmission = submissions.find(s => s.team_id === team.id);
 
                 // Simple scoring algorithm
                 let score = 0;
@@ -57,10 +58,10 @@ export default function LeaderboardPage({
                     }
 
                     // Bonus for using sponsors
-                    score += teamSubmission.sponsorsUsed.length * 5;
+                    score += teamSubmission.sponsors_used.length * 5;
 
                     // Bonus for having presentation link
-                    if (teamSubmission.presentationLink) {
+                    if (teamSubmission.presentation_link) {
                         score += 10;
                     }
                 }
@@ -336,7 +337,7 @@ export default function LeaderboardPage({
                                                     {prize.title}
                                                 </h3>
                                                 <p className="text-sm text-fluorescent-cyan">
-                                                    {prize.sponsorId ? "Sponsor Prize" : "General Prize"}
+                                                    {prize.sponsor_id ? "Sponsor Prize" : "General Prize"}
                                                 </p>
                                             </div>
                                             <Chip

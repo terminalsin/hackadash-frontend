@@ -21,11 +21,14 @@ import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/n
 
 import { siteConfig } from "@/config/site";
 import { GithubIcon } from "@/components/icons";
+import { ReportIssueModal } from "@/components/ReportIssueModal";
+import { useDisclosure } from "@heroui/modal";
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const { user } = useUser();
+  const { isOpen: isReportIssueOpen, onOpen: onReportIssueOpen, onClose: onReportIssueClose } = useDisclosure();
 
   // Check if we're in a hackathon-specific route
   const adminMatch = pathname.match(/^\/([^\/]+)\/admin\/(dashboard|teams|submissions|sponsors|prizes|issues)/);
@@ -131,8 +134,19 @@ export const Navbar = () => {
             <GithubIcon className="text-hacker-green hover:text-fluorescent-cyan transition-colors" />
           </Link>
         </NavbarItem>
-        
+
         <SignedIn>
+          {isInHackathon && (
+            <NavbarItem className="hidden sm:flex">
+              <Button
+                className="cyber-button"
+                size="sm"
+                onPress={onReportIssueOpen}
+              >
+                REPORT ISSUE
+              </Button>
+            </NavbarItem>
+          )}
           <NavbarItem className="hidden md:flex">
             <NextLink href="/admin">
               <Button
@@ -144,7 +158,7 @@ export const Navbar = () => {
             </NextLink>
           </NavbarItem>
           <NavbarItem>
-            <UserButton 
+            <UserButton
               appearance={{
                 elements: {
                   avatarBox: "w-8 h-8",
@@ -156,7 +170,7 @@ export const Navbar = () => {
             />
           </NavbarItem>
         </SignedIn>
-        
+
         <SignedOut>
           <NavbarItem>
             <SignInButton mode="modal">
@@ -176,7 +190,7 @@ export const Navbar = () => {
           <GithubIcon className="text-hacker-green" />
         </Link>
         <SignedIn>
-          <UserButton 
+          <UserButton
             appearance={{
               elements: {
                 avatarBox: "w-6 h-6",
@@ -206,7 +220,22 @@ export const Navbar = () => {
               </NextLink>
             </NavbarMenuItem>
           ))}
-          
+
+          {isInHackathon && (
+            <NavbarMenuItem>
+              <Button
+                className="cyber-button w-full"
+                size="sm"
+                onPress={() => {
+                  onReportIssueOpen();
+                  setIsMenuOpen(false);
+                }}
+              >
+                REPORT ISSUE
+              </Button>
+            </NavbarMenuItem>
+          )}
+
           <SignedOut>
             <NavbarMenuItem>
               <SignInButton mode="modal">
@@ -221,6 +250,13 @@ export const Navbar = () => {
           </SignedOut>
         </div>
       </NavbarMenu>
+
+      {/* Report Issue Modal */}
+      <ReportIssueModal
+        isOpen={isReportIssueOpen}
+        onClose={onReportIssueClose}
+        hackathonId={hackathonId ? parseInt(hackathonId) : undefined}
+      />
     </HeroUINavbar>
   );
 };

@@ -7,14 +7,12 @@ export function useHackathons() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Note: The new API doesn't have a getHackathons endpoint
-  // This hook would need to be updated based on actual requirements
   const fetchHackathons = async () => {
     try {
       setLoading(true);
       setError(null);
-      // TODO: Implement based on actual backend endpoint
-      setHackathons([]);
+      const data = await apiService.getHackathons();
+      setHackathons(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch hackathons");
     } finally {
@@ -93,9 +91,11 @@ export function useHackathon(id: number) {
     if (!id) return;
 
     try {
+      console.log("fetching hackathon", id);
       setLoading(true);
       setError(null);
       const data = await apiService.getHackathon(id);
+      console.log("fetched hackathon", data);
       setHackathon(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch hackathon");

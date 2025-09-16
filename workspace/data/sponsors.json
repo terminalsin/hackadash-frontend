@@ -1,0 +1,28 @@
+[{
+        "id": 1,
+        "name": "TechCorp",
+        "description": "Leading technology company specializing in cloud infrastructure and AI solutions. We provide cutting-edge APIs and development tools for modern applications.",
+        "logo": "https://via.placeholder.com/200x100/00ff00/000000?text=TechCorp",
+        "website": "https://techcorp.com",
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": 2,
+        "name": "CloudTech Solutions",
+        "description": "Enterprise cloud computing platform offering scalable infrastructure, serverless functions, and data analytics services for developers worldwide.",
+        "logo": "https://via.placeholder.com/200x100/0099ff/ffffff?text=CloudTech",
+        "website": "https://cloudtech.com",
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": 3,
+        "name": "AI Ventures",
+        "description": "Machine learning and artificial intelligence company providing pre-trained models, ML APIs, and computer vision solutions for innovative startups.",
+        "logo": "https://via.placeholder.com/200x100/ff6600/ffffff?text=AI+Ventures",
+        "website": "https://aiventures.com",
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+    }
+]

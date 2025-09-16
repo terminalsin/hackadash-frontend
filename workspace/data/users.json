@@ -1,0 +1,49 @@
+[
+  {
+    "id": "user1",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "role": "ORGANISER",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user2",
+    "name": "Jane Smith",
+    "email": "jane@example.com",
+    "role": "GUEST",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user3",
+    "name": "Alex Chen",
+    "email": "alex@techcorp.com",
+    "role": "SPONSOR",
+    "companyId": "1",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user4",
+    "name": "Sarah Wilson",
+    "email": "sarah@cloudtech.com",
+    "role": "SPONSOR",
+    "companyId": "2",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user5",
+    "name": "Mike Rodriguez",
+    "email": "mike@aiventures.com",
+    "role": "SPONSOR",
+    "companyId": "3",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "user_32nUnYp0E6A9yGj245BCR9839T9",
+    "firstName": null,
+    "lastName": null,
+    "fullName": null,
+    "emailAddress": "unknown@example.com",
+    "role": "GUEST",
+    "createdAt": "2025-09-16T21:40:12.936Z"
+  }
+]

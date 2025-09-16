@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, use } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
@@ -11,15 +11,16 @@ import { Avatar } from "@heroui/avatar";
 import { Divider } from "@heroui/divider";
 import { useTeams } from "@/hooks/useTeams";
 import { useRouter } from "next/navigation";
-import { Team } from "@/types";
+import { Team, UserRole } from "@/types";
 import { useUser } from "@clerk/nextjs";
 
 export default function TeamsPage({
     params,
 }: {
-    params: { hackathonId: string };
+    params: Promise<{ hackathonId: string }>;
 }) {
-    const { teams, loading, createTeam, updateTeam } = useTeams(params.hackathonId);
+    const resolvedParams = use(params);
+    const { teams, loading, createTeam, updateTeam, joinTeam } = useTeams(parseInt(resolvedParams.hackathonId));
     const { isOpen, onOpen, onClose } = useDisclosure();
     const { isOpen: isJoinOpen, onOpen: onJoinOpen, onClose: onJoinClose } = useDisclosure();
     const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -30,10 +31,10 @@ export default function TeamsPage({
     const [joinCode, setJoinCode] = useState("");
     const router = useRouter();
     const { user } = useUser();
-    
+
     // Check if user is already in a team
-    const userTeam = teams.find(team => 
-        team.members.some(member => 
+    const userTeam = teams.find(team =>
+        team.members.some(member =>
             member.email === user?.primaryEmailAddress?.emailAddress
         )
     );
@@ -41,23 +42,19 @@ export default function TeamsPage({
 
     const handleCreateTeam = async () => {
         if (!user) return;
-        
+
         try {
             const newTeam = await createTeam({
                 name: formData.name,
                 description: formData.description,
-                members: [{
-                    id: user.id,
-                    name: user.fullName || user.firstName || "Unknown User",
-                    email: user.primaryEmailAddress?.emailAddress || "",
-                    role: "guest" // Team leader role
-                }],
-                hackathonId: params.hackathonId,
             });
+
+            // TODO: Add the user to the team after creation
+            // This would require a separate API call to add members
             setFormData({ name: "", description: "" });
             onClose();
             // Redirect to team details after creating
-            router.push(`/${params.hackathonId}/team-details`);
+            router.push(`/${resolvedParams.hackathonId}/team-details`);
         } catch (error) {
             console.error("Failed to create team:", error);
         }
@@ -72,23 +69,16 @@ export default function TeamsPage({
     const handleSubmitJoin = async () => {
         if (selectedTeam && user) {
             try {
-                // In a real app, you'd validate the join code and add the user to the team
-                // For now, we'll simulate adding the user to the team
-                const updatedMembers = [...selectedTeam.members, {
-                    id: user.id,
-                    name: user.fullName || user.firstName || "Unknown User",
-                    email: user.primaryEmailAddress?.emailAddress || "",
-                    role: "guest" as const
-                }];
-                
-                await updateTeam(selectedTeam.id, {
-                    members: updatedMembers
+                // Use the real API to join the team
+                await joinTeam(selectedTeam.id, {
+                    join_code: joinCode || undefined
                 });
-                
+
                 onJoinClose();
-                router.push(`/${params.hackathonId}/team-details`);
+                router.push(`/${resolvedParams.hackathonId}/team-details`);
             } catch (error) {
                 console.error("Failed to join team:", error);
+                // You could add error handling UI here, like showing a toast notification
             }
         }
     };
@@ -133,7 +123,7 @@ export default function TeamsPage({
                     {isUserInTeam && (
                         <Button
                             className="cyber-button"
-                            onPress={() => router.push(`/${params.hackathonId}/team-details`)}
+                            onPress={() => router.push(`/${resolvedParams.hackathonId}/team-details`)}
                         >
                             VIEW MY TEAM
                         </Button>
@@ -189,7 +179,7 @@ export default function TeamsPage({
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-xs text-white truncate">{member.name}</p>
                                                     </div>
-                                                    {member.role === "guest" && (
+                                                    {member.role === UserRole.GUEST && (
                                                         <Chip size="sm" variant="flat" color="primary">
                                                             LEADER
                                                         </Chip>
@@ -210,7 +200,7 @@ export default function TeamsPage({
                                 <div className="grid grid-cols-2 gap-4 text-center">
                                     <div>
                                         <p className="text-sm font-bold text-fluorescent-cyan">
-                                            {new Date(team.createdAt).toLocaleDateString()}
+                                            {new Date(team.created_at).toLocaleDateString()}
                                         </p>
                                         <p className="text-xs text-outer-space">FORMED</p>
                                     </div>
@@ -228,8 +218,8 @@ export default function TeamsPage({
                                     disabled={team.members.length >= 4 || isUserInTeam}
                                     onPress={() => handleJoinTeam(team)}
                                 >
-                                    {isUserInTeam ? "ALREADY IN TEAM" : 
-                                     team.members.length < 4 ? "JOIN TEAM" : "TEAM FULL"}
+                                    {isUserInTeam ? "ALREADY IN TEAM" :
+                                        team.members.length < 4 ? "JOIN TEAM" : "TEAM FULL"}
                                 </Button>
                             </CardBody>
                         </Card>

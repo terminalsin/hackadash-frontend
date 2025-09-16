@@ -1,0 +1,36 @@
+[{
+        "id": 1,
+        "title": "Best Overall Project",
+        "description": "The most impressive project overall",
+        "value": "$5000",
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": 2,
+        "title": "Best Use of TechCorp APIs",
+        "description": "Most innovative use of TechCorp's cloud infrastructure and development APIs",
+        "value": "$2500",
+        "sponsor_id": 1,
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": 3,
+        "title": "CloudTech Innovation Award",
+        "description": "Best project utilizing CloudTech's serverless and analytics platform",
+        "value": "$2000",
+        "sponsor_id": 2,
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+    },
+    {
+        "id": 4,
+        "title": "AI Ventures ML Excellence",
+        "description": "Outstanding implementation of machine learning using AI Ventures' tools",
+        "value": "$3000",
+        "sponsor_id": 3,
+        "hackathon_id": 1,
+        "created_at": "2024-01-01T00:00:00.000Z"
+    }
+]

@@ -18,11 +18,31 @@ export enum SubmissionState {
 
 export interface User {
   id: string;
-  name: string;
-  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  fullName?: string | null;
+  emailAddress: string;
+  imageUrl?: string;
   role: UserRole;
   companyId?: string;
   createdAt: Date;
+}
+
+// Helper function to create User from Clerk user
+export interface ClerkUserAdapter {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  fullName?: string | null;
+  primaryEmailAddress?: {
+    emailAddress: string;
+  } | null;
+  imageUrl?: string;
+  publicMetadata?: {
+    role?: UserRole;
+    companyId?: string;
+  };
+  createdAt?: Date;
 }
 
 // Backend request/response schemas
@@ -64,6 +84,10 @@ export interface TeamUpdate {
   description?: string;
 }
 
+export interface TeamJoinRequest {
+  join_code?: string;
+}
+
 export interface SubmissionCreate {
   title: string;
   description: string;
@@ -99,11 +123,18 @@ export interface IssueCreate {
   description: string;
 }
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role?: UserRole;
+}
+
 export interface Team {
   id: number;
   name: string;
   description: string;
-  members: User[];
+  members: TeamMember[];
   hackathon_id: number;
   created_at: Date;
   updated_at: Date;

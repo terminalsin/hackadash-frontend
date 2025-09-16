@@ -9,6 +9,7 @@ import { useHackathon } from "@/hooks/useHackathons";
 import { useRouter, usePathname } from "next/navigation";
 import { Hackathon } from "@/types";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { UserButton } from "@clerk/nextjs";
 
 export default function AdminHackathonLayout({
     children,
@@ -70,62 +71,63 @@ export default function AdminHackathonLayout({
         <ProtectedRoute>
             <div className="matrix-bg min-h-screen">
                 {/* Admin Header */}
-            <div className="border-b border-hacker-green bg-black/50 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-6 py-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-hacker-green terminal-text">
-                                ADMIN: {hackathon.title}
-                            </h1>
-                            <p className="text-outer-space text-sm">{hackathon.location}</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="text-right">
-                                <p className="text-hacker-green font-mono font-bold text-lg">
-                                    PIN: {hackathon.pinCode}
-                                </p>
-                                <p className="text-xs text-outer-space">Access Code</p>
+                <div className="border-b border-hacker-green bg-black/50 backdrop-blur-sm">
+                    <div className="max-w-7xl mx-auto px-6 py-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h1 className="text-2xl font-bold text-hacker-green terminal-text">
+                                    ADMIN: {hackathon.title}
+                                </h1>
+                                <p className="text-outer-space text-sm">{hackathon.location}</p>
                             </div>
-                            <Chip
-                                color={hackathon.isStarted ? "success" : "warning"}
-                                variant="shadow"
-                                className="font-mono"
-                            >
-                                {hackathon.isStarted ? "LIVE" : "PENDING"}
-                            </Chip>
+                            <div className="flex items-center gap-4">
+                                <div className="text-right">
+                                    <p className="text-hacker-green font-mono font-bold text-lg">
+                                        PIN: {hackathon.pinCode}
+                                    </p>
+                                    <p className="text-xs text-outer-space">Access Code</p>
+                                </div>
+                                <Chip
+                                    color={hackathon.isStarted ? "success" : "warning"}
+                                    variant="shadow"
+                                    className="font-mono"
+                                >
+                                    {hackathon.isStarted ? "LIVE" : "PENDING"}
+                                </Chip>
+                                <UserButton />
+                            </div>
                         </div>
+
+                        {/* Admin Navigation Tabs */}
+                        <Tabs
+                            selectedKey={getCurrentTab()}
+                            onSelectionChange={(key) => handleTabChange(key as string)}
+                            className="w-full"
+                            classNames={{
+                                tabList: "bg-black/20 border border-hacker-green/20",
+                                cursor: "bg-hacker-green/20 border border-hacker-green",
+                                tab: "text-outer-space data-[selected=true]:text-hacker-green",
+                                tabContent: "font-mono text-sm"
+                            }}
+                        >
+                            <Tab key="dashboard" title="DASHBOARD">
+                            </Tab>
+                            <Tab key="teams" title="TEAMS">
+                            </Tab>
+                            <Tab key="submissions" title="SUBMISSIONS">
+                            </Tab>
+                            <Tab key="sponsors" title="SPONSORS">
+                            </Tab>
+                            <Tab key="prizes" title="PRIZES">
+                            </Tab>
+                            <Tab key="issues" title="ISSUES">
+                            </Tab>
+                        </Tabs>
                     </div>
-
-                    {/* Admin Navigation Tabs */}
-                    <Tabs
-                        selectedKey={getCurrentTab()}
-                        onSelectionChange={(key) => handleTabChange(key as string)}
-                        className="w-full"
-                        classNames={{
-                            tabList: "bg-black/20 border border-hacker-green/20",
-                            cursor: "bg-hacker-green/20 border border-hacker-green",
-                            tab: "text-outer-space data-[selected=true]:text-hacker-green",
-                            tabContent: "font-mono text-sm"
-                        }}
-                    >
-                        <Tab key="dashboard" title="DASHBOARD">
-                        </Tab>
-                        <Tab key="teams" title="TEAMS">
-                        </Tab>
-                        <Tab key="submissions" title="SUBMISSIONS">
-                        </Tab>
-                        <Tab key="sponsors" title="SPONSORS">
-                        </Tab>
-                        <Tab key="prizes" title="PRIZES">
-                        </Tab>
-                        <Tab key="issues" title="ISSUES">
-                        </Tab>
-                    </Tabs>
                 </div>
-            </div>
 
-            {children}
-        </div>
+                {children}
+            </div>
         </ProtectedRoute>
     );
 }

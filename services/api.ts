@@ -12,6 +12,7 @@ import {
   HackathonUpdate,
   TeamCreate,
   TeamUpdate,
+  TeamJoinRequest,
   SubmissionCreate,
   SubmissionUpdate,
   SponsorCreate,
@@ -23,6 +24,7 @@ import {
 
 export interface ApiService {
   // Hackathon operations
+  getHackathons(): Promise<Hackathon[]>;
   createHackathon(hackathon: HackathonCreate): Promise<Hackathon>;
   getHackathon(id: number): Promise<Hackathon>;
   updateHackathon(id: number, hackathon: HackathonUpdate): Promise<Hackathon>;
@@ -33,10 +35,13 @@ export interface ApiService {
   getTeams(hackathonId: number): Promise<Team[]>;
   createTeam(hackathonId: number, team: TeamCreate): Promise<Team>;
   updateTeam(teamId: number, team: TeamUpdate): Promise<Team>;
+  joinTeam(teamId: number, joinRequest: TeamJoinRequest): Promise<{ message: string; team: Team }>;
+  leaveTeam(teamId: number): Promise<{ message: string; team: Team }>;
 
   // Submission operations
   createSubmission(teamId: number, submission: SubmissionCreate): Promise<Submission>;
   updateSubmission(submissionId: number, submission: SubmissionUpdate): Promise<Submission>;
+  deleteSubmission(submissionId: number): Promise<{ message: string }>;
   getSubmissions(hackathonId: number): Promise<Submission[]>;
 
   // Sponsor operations

@@ -1,0 +1,13 @@
+[{
+    "id": 1,
+    "title": "HackTheMatrix 2024",
+    "description": "48-hour hackathon focused on AI, cloud computing, and innovative developer tools. Join us for an exciting weekend of coding, collaboration, and cutting-edge technology.",
+    "image": "https://via.placeholder.com/800x400/000000/00ff00?text=HackTheMatrix+2024",
+    "location": "San Francisco, CA",
+    "start_time": "2024-10-15T09:00:00.000Z",
+    "end_time": "2024-10-17T18:00:00.000Z",
+    "pin_code": "1337",
+    "is_started": true,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+}]

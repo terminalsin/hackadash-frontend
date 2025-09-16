@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
@@ -14,18 +14,21 @@ import { Link } from "@heroui/link";
 import { useTeams } from "@/hooks/useTeams";
 import { useSubmissions } from "@/hooks/useSubmissions";
 import { useSponsors } from "@/hooks/useSponsors";
-import { Team, Submission, SubmissionState } from "@/types";
+import { Team, Submission, SubmissionState, UserRole } from "@/types";
 import { useUser } from "@clerk/nextjs";
 
 export default function TeamDetailsPage({
     params,
 }: {
-    params: { hackathonId: string };
+    params: Promise<{ hackathonId: string }>;
 }) {
-    const { teams, loading: teamsLoading } = useTeams(params.hackathonId);
-    const { submissions, loading: submissionsLoading, createSubmission, updateSubmission } = useSubmissions(params.hackathonId);
-    const { sponsors } = useSponsors(params.hackathonId);
+    const resolvedParams = use(params);
+    const { teams, loading: teamsLoading, leaveTeam } = useTeams(parseInt(resolvedParams.hackathonId));
+    const { submissions, loading: submissionsLoading, createSubmission, updateSubmission, deleteSubmission } = useSubmissions(parseInt(resolvedParams.hackathonId));
+    const { sponsors } = useSponsors(parseInt(resolvedParams.hackathonId));
     const { isOpen, onOpen, onClose } = useDisclosure();
+    const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure();
+    const { isOpen: isLeaveOpen, onOpen: onLeaveOpen, onClose: onLeaveClose } = useDisclosure();
     const { user } = useUser();
 
     const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
@@ -43,26 +46,27 @@ export default function TeamDetailsPage({
     useEffect(() => {
         if (teams.length > 0 && user) {
             // Find team where the user is a member (by email)
-            const userTeam = teams.find(team => 
-                team.members.some(member => 
+            const userTeam = teams.find(team =>
+                team.members.some(member =>
                     member.email === user.primaryEmailAddress?.emailAddress
+                    || member.id === user.id
                 )
             );
-            
+
             if (userTeam) {
                 setCurrentTeam(userTeam);
 
                 // Find team's submission
-                const submission = submissions.find(s => s.teamId === userTeam.id);
+                const submission = submissions.find(s => s.team_id === userTeam.id);
                 setTeamSubmission(submission || null);
 
                 if (submission) {
                     setFormData({
                         title: submission.title,
                         description: submission.description,
-                        githubLink: submission.githubLink,
-                        presentationLink: submission.presentationLink || "",
-                        sponsorsUsed: submission.sponsorsUsed,
+                        githubLink: submission.github_link,
+                        presentationLink: submission.presentation_link || "",
+                        sponsorsUsed: submission.sponsors_used.map(sponsor => sponsor.id.toString()),
                     });
                 }
             } else {
@@ -77,15 +81,12 @@ export default function TeamDetailsPage({
         if (!currentTeam) return;
 
         try {
-            const newSubmission = await createSubmission({
+            const newSubmission = await createSubmission(currentTeam.id, {
                 title: formData.title,
                 description: formData.description,
-                githubLink: formData.githubLink,
-                presentationLink: formData.presentationLink || undefined,
-                state: SubmissionState.DRAFT,
-                sponsorsUsed: formData.sponsorsUsed,
-                teamId: currentTeam.id,
-                hackathonId: params.hackathonId,
+                github_link: formData.githubLink,
+                presentation_link: formData.presentationLink || undefined,
+                sponsor_ids: formData.sponsorsUsed.map(id => parseInt(id)),
             });
             setTeamSubmission(newSubmission);
             onClose();
@@ -101,9 +102,9 @@ export default function TeamDetailsPage({
             const updatedSubmission = await updateSubmission(teamSubmission.id, {
                 title: formData.title,
                 description: formData.description,
-                githubLink: formData.githubLink,
-                presentationLink: formData.presentationLink || undefined,
-                sponsorsUsed: formData.sponsorsUsed,
+                github_link: formData.githubLink,
+                presentation_link: formData.presentationLink || undefined,
+                sponsor_ids: formData.sponsorsUsed.map(id => parseInt(id)),
             });
             setTeamSubmission(updatedSubmission);
             setIsEditing(false);
@@ -128,6 +129,37 @@ export default function TeamDetailsPage({
         setIsEditing(true);
     };
 
+    const handleDeleteSubmission = async () => {
+        if (!teamSubmission) return;
+
+        try {
+            await deleteSubmission(teamSubmission.id);
+            setTeamSubmission(null);
+            setFormData({
+                title: "",
+                description: "",
+                githubLink: "",
+                presentationLink: "",
+                sponsorsUsed: [],
+            });
+            onDeleteClose();
+        } catch (error) {
+            console.error("Failed to delete submission:", error);
+        }
+    };
+
+    const handleLeaveTeam = async () => {
+        if (!currentTeam) return;
+
+        try {
+            await leaveTeam(currentTeam.id);
+            // Redirect to teams page after leaving
+            window.location.href = `/${resolvedParams.hackathonId}/teams`;
+        } catch (error) {
+            console.error("Failed to leave team:", error);
+        }
+    };
+
     const getStateColor = (state: SubmissionState) => {
         switch (state) {
             case SubmissionState.DRAFT:
@@ -141,10 +173,6 @@ export default function TeamDetailsPage({
         }
     };
 
-    const getSponsorName = (sponsorId: string) => {
-        const sponsor = sponsors.find(s => s.id === sponsorId);
-        return sponsor?.name || "Unknown Sponsor";
-    };
 
     if (teamsLoading || submissionsLoading) {
         return (
@@ -165,7 +193,7 @@ export default function TeamDetailsPage({
                             <p className="text-outer-space mb-4">You need to join or create a team first.</p>
                             <Button
                                 className="cyber-button"
-                                onPress={() => window.location.href = `/${params.hackathonId}/teams`}
+                                onPress={() => window.location.href = `/${resolvedParams.hackathonId}/teams`}
                             >
                                 GO TO TEAMS
                             </Button>
@@ -189,13 +217,24 @@ export default function TeamDetailsPage({
                                 </h1>
                                 <p className="text-outer-space">{currentTeam.description}</p>
                             </div>
-                            <Chip
-                                color="success"
-                                variant="shadow"
-                                className="font-mono"
-                            >
-                                YOUR TEAM
-                            </Chip>
+                            <div className="flex items-center gap-2">
+                                <Chip
+                                    color="success"
+                                    variant="shadow"
+                                    className="font-mono"
+                                >
+                                    YOUR TEAM
+                                </Chip>
+                                <Button
+                                    className="cyber-button"
+                                    variant="bordered"
+                                    size="sm"
+                                    color="danger"
+                                    onPress={onLeaveOpen}
+                                >
+                                    LEAVE
+                                </Button>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardBody>
@@ -218,9 +257,9 @@ export default function TeamDetailsPage({
                                             <Chip
                                                 size="sm"
                                                 variant="flat"
-                                                color={member.role === "guest" ? "primary" : "default"}
+                                                color={member.role === UserRole.GUEST ? "primary" : "default"}
                                             >
-                                                {member.role === "guest" ? "LEADER" : member.role.toUpperCase()}
+                                                {member.role === UserRole.GUEST ? "LEADER" : member.role?.toUpperCase() || "MEMBER"}
                                             </Chip>
                                         </div>
                                     ))}
@@ -238,7 +277,7 @@ export default function TeamDetailsPage({
                                     <div className="flex justify-between items-center">
                                         <span className="text-outer-space">Formed:</span>
                                         <span className="text-white font-mono">
-                                            {new Date(currentTeam.createdAt).toLocaleDateString()}
+                                            {new Date(currentTeam.created_at).toLocaleDateString()}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center">
@@ -267,14 +306,25 @@ export default function TeamDetailsPage({
                             {teamSubmission ? (
                                 <div className="flex gap-2">
                                     {!isEditing && (
-                                        <Button
-                                            className="cyber-button"
-                                            variant="bordered"
-                                            size="sm"
-                                            onPress={openEditMode}
-                                        >
-                                            EDIT
-                                        </Button>
+                                        <>
+                                            <Button
+                                                className="cyber-button"
+                                                variant="bordered"
+                                                size="sm"
+                                                onPress={openEditMode}
+                                            >
+                                                EDIT
+                                            </Button>
+                                            <Button
+                                                className="cyber-button"
+                                                variant="bordered"
+                                                size="sm"
+                                                color="danger"
+                                                onPress={onDeleteOpen}
+                                            >
+                                                DELETE
+                                            </Button>
+                                        </>
                                     )}
                                     {isEditing && (
                                         <>
@@ -350,7 +400,7 @@ export default function TeamDetailsPage({
                                             variant="bordered"
                                         >
                                             {sponsors.map((sponsor) => (
-                                                <SelectItem key={sponsor.id} value={sponsor.id}>
+                                                <SelectItem key={sponsor.id.toString()}>
                                                     {sponsor.name}
                                                 </SelectItem>
                                             ))}
@@ -372,18 +422,18 @@ export default function TeamDetailsPage({
                                                     <div>
                                                         <p className="text-xs text-outer-space">Repository:</p>
                                                         <Link
-                                                            href={teamSubmission.githubLink}
+                                                            href={teamSubmission.github_link}
                                                             isExternal
                                                             className="text-hacker-green font-mono text-sm"
                                                         >
-                                                            {teamSubmission.githubLink}
+                                                            {teamSubmission.github_link}
                                                         </Link>
                                                     </div>
-                                                    {teamSubmission.presentationLink && (
+                                                    {teamSubmission.presentation_link && (
                                                         <div>
                                                             <p className="text-xs text-outer-space">Presentation:</p>
                                                             <Link
-                                                                href={teamSubmission.presentationLink}
+                                                                href={teamSubmission.presentation_link}
                                                                 isExternal
                                                                 className="text-fluorescent-cyan font-mono text-sm"
                                                             >
@@ -410,14 +460,14 @@ export default function TeamDetailsPage({
                                                     <div>
                                                         <p className="text-xs text-outer-space">Last Updated:</p>
                                                         <p className="text-white font-mono text-sm">
-                                                            {new Date(teamSubmission.updatedAt).toLocaleString()}
+                                                            {new Date(teamSubmission.updated_at).toLocaleString()}
                                                         </p>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {teamSubmission.sponsorsUsed.length > 0 && (
+                                        {teamSubmission.sponsors_used.length > 0 && (
                                             <>
                                                 <Divider />
                                                 <div>
@@ -425,14 +475,14 @@ export default function TeamDetailsPage({
                                                         TECHNOLOGIES USED
                                                     </h4>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {teamSubmission.sponsorsUsed.map((sponsorId) => (
+                                                        {teamSubmission.sponsors_used.map((sponsor) => (
                                                             <Chip
-                                                                key={sponsorId}
+                                                                key={sponsor.id}
                                                                 variant="flat"
                                                                 color="secondary"
                                                                 size="sm"
                                                             >
-                                                                {getSponsorName(sponsorId)}
+                                                                {sponsor.name}
                                                             </Chip>
                                                         ))}
                                                     </div>
@@ -522,7 +572,7 @@ export default function TeamDetailsPage({
                                             variant="bordered"
                                         >
                                             {sponsors.map((sponsor) => (
-                                                <SelectItem key={sponsor.id} value={sponsor.id}>
+                                                <SelectItem key={sponsor.id.toString()}>
                                                     {sponsor.name}
                                                 </SelectItem>
                                             ))}
@@ -543,6 +593,105 @@ export default function TeamDetailsPage({
                                         disabled={!formData.title || !formData.description || !formData.githubLink}
                                     >
                                         CREATE
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+
+                {/* Delete Submission Confirmation Modal */}
+                <Modal
+                    isOpen={isDeleteOpen}
+                    onClose={onDeleteClose}
+                    className="hacker-card"
+                    backdrop="blur"
+                    size="md"
+                >
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">
+                                    <h2 className="text-xl font-bold terminal-text text-warning-red">
+                                        DELETE SUBMISSION
+                                    </h2>
+                                </ModalHeader>
+                                <ModalBody>
+                                    <p className="text-outer-space">
+                                        Are you sure you want to delete your team's submission? This action cannot be undone.
+                                    </p>
+                                    {teamSubmission && (
+                                        <div className="p-3 border border-outer-space rounded bg-black/20">
+                                            <p className="text-white font-semibold">{teamSubmission.title}</p>
+                                            <p className="text-outer-space text-sm">{teamSubmission.description}</p>
+                                        </div>
+                                    )}
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button
+                                        className="cyber-button"
+                                        variant="bordered"
+                                        onPress={onClose}
+                                    >
+                                        CANCEL
+                                    </Button>
+                                    <Button
+                                        className="cyber-button"
+                                        color="danger"
+                                        onPress={handleDeleteSubmission}
+                                    >
+                                        DELETE SUBMISSION
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        )}
+                    </ModalContent>
+                </Modal>
+
+                {/* Leave Team Confirmation Modal */}
+                <Modal
+                    isOpen={isLeaveOpen}
+                    onClose={onLeaveClose}
+                    className="hacker-card"
+                    backdrop="blur"
+                    size="md"
+                >
+                    <ModalContent>
+                        {(onClose) => (
+                            <>
+                                <ModalHeader className="flex flex-col gap-1">
+                                    <h2 className="text-xl font-bold terminal-text text-warning-red">
+                                        LEAVE TEAM
+                                    </h2>
+                                </ModalHeader>
+                                <ModalBody>
+                                    <p className="text-outer-space">
+                                        Are you sure you want to leave this team? You will need to join or create a new team to participate in the hackathon.
+                                    </p>
+                                    {currentTeam && (
+                                        <div className="p-3 border border-outer-space rounded bg-black/20">
+                                            <p className="text-white font-semibold">{currentTeam.name}</p>
+                                            <p className="text-outer-space text-sm">{currentTeam.description}</p>
+                                            <p className="text-outer-space text-xs mt-1">
+                                                {currentTeam.members.length} member(s)
+                                            </p>
+                                        </div>
+                                    )}
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button
+                                        className="cyber-button"
+                                        variant="bordered"
+                                        onPress={onClose}
+                                    >
+                                        CANCEL
+                                    </Button>
+                                    <Button
+                                        className="cyber-button"
+                                        color="danger"
+                                        onPress={handleLeaveTeam}
+                                    >
+                                        LEAVE TEAM
                                     </Button>
                                 </ModalFooter>
                             </>
