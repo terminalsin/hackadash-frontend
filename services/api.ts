@@ -18,6 +18,7 @@ import {
   SponsorCreate,
   PrizeCreate,
   IssueCreate,
+  IssueUpdate,
   JoinRequest,
   InviteRequest
 } from "@/types";
@@ -54,6 +55,7 @@ export interface ApiService {
 
   // Issue operations
   createIssue(hackathonId: number, issue: IssueCreate): Promise<Issue>;
+  updateIssue(issueId: number, issue: IssueUpdate): Promise<Issue>;
   getIssues(hackathonId: number): Promise<Issue[]>;
 }
 

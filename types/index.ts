@@ -123,6 +123,10 @@ export interface IssueCreate {
   description: string;
 }
 
+export interface IssueUpdate {
+  status?: "open" | "in_progress" | "resolved";
+}
+
 export interface TeamMember {
   id: string;
   name: string;

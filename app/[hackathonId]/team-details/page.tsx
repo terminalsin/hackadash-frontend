@@ -347,12 +347,7 @@ export default function TeamDetailsPage({
                                     )}
                                 </div>
                             ) : (
-                                <Button
-                                    className="cyber-button"
-                                    onPress={openCreateModal}
-                                >
-                                    CREATE SUBMISSION
-                                </Button>
+                                <p></p>
                             )}
                         </div>
                     </CardHeader>

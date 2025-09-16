@@ -34,7 +34,19 @@ export function useIssues(hackathonId: number) {
     }
   };
 
-  // Note: updateIssueStatus not available in new API
+  const updateIssueStatus = async (issueId: number, status: Issue["status"]) => {
+    try {
+      setError(null);
+      const updatedIssue = await apiService.updateIssue(issueId, { status });
+      setIssues(prev => prev.map(issue =>
+        issue.id === issueId ? updatedIssue : issue
+      ));
+      return updatedIssue;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update issue status");
+      throw err;
+    }
+  };
 
   useEffect(() => {
     fetchIssues();
@@ -46,6 +58,7 @@ export function useIssues(hackathonId: number) {
     error,
     refetch: fetchIssues,
     createIssue,
+    updateIssueStatus,
   };
 }
 

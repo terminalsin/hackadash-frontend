@@ -42,6 +42,7 @@ export default function UserHackathonLayout({
     const getCurrentTab = () => {
         if (pathname.includes('/team-details')) return 'team-details';
         if (pathname.includes('/leaderboard')) return 'leaderboard';
+        if (pathname.includes('/issues')) return 'issues';
         return 'teams';
     };
 
@@ -52,6 +53,8 @@ export default function UserHackathonLayout({
             router.push(`/${hackathonId}/team-details`);
         } else if (key === 'leaderboard') {
             router.push(`/${hackathonId}/leaderboard`);
+        } else if (key === 'issues') {
+            router.push(`/${hackathonId}/issues`);
         }
     };
 
@@ -167,6 +170,8 @@ export default function UserHackathonLayout({
                                 </Tab>
                             )}
                             <Tab key="leaderboard" title="LEADERBOARD">
+                            </Tab>
+                            <Tab key="issues" title="ISSUES">
                             </Tab>
                         </Tabs>
                     </div>

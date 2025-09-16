@@ -16,6 +16,7 @@ import {
     SponsorCreate,
     PrizeCreate,
     IssueCreate,
+    IssueUpdate,
     JoinRequest,
     InviteRequest
 } from "@/types";
@@ -167,6 +168,13 @@ class RealApiService implements ApiService {
     async createIssue(hackathonId: number, issue: IssueCreate): Promise<Issue> {
         return this.fetchApi<Issue>(`/hackathons/${hackathonId}/issues`, {
             method: 'POST',
+            body: JSON.stringify(issue),
+        });
+    }
+
+    async updateIssue(issueId: number, issue: IssueUpdate): Promise<Issue> {
+        return this.fetchApi<Issue>(`/issues/${issueId}`, {
+            method: 'PUT',
             body: JSON.stringify(issue),
         });
     }

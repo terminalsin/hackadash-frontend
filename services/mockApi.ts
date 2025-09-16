@@ -20,6 +20,7 @@ import {
   SponsorCreate,
   PrizeCreate,
   IssueCreate,
+  IssueUpdate,
   JoinRequest,
   InviteRequest
 } from "@/types";
@@ -766,6 +767,23 @@ export class MockApiService implements ApiService {
     this.issues.push(newIssue);
     this.saveToStorage();
     return newIssue;
+  }
+
+  async updateIssue(issueId: number, issue: IssueUpdate): Promise<Issue> {
+    await this.delay();
+    const index = this.issues.findIndex(i => i.id === issueId);
+    if (index === -1) {
+      throw new Error('Issue not found');
+    }
+
+    this.issues[index] = {
+      ...this.issues[index],
+      ...issue,
+      updated_at: new Date(),
+    };
+
+    this.saveToStorage();
+    return this.issues[index];
   }
 
   async getIssues(hackathonId: number): Promise<Issue[]> {

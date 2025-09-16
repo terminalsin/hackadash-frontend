@@ -17,7 +17,7 @@ export default function IssuesPage({
 }: {
     params: { hackathonId: string };
 }) {
-    const { issues, loading, createIssue, updateIssueStatus } = useIssues(params.hackathonId);
+    const { issues, loading, createIssue, updateIssueStatus } = useIssues(parseInt(params.hackathonId));
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
     const [formData, setFormData] = useState({
@@ -31,9 +31,6 @@ export default function IssuesPage({
             await createIssue({
                 title: formData.title,
                 description: formData.description,
-                reportedBy: formData.reportedBy,
-                status: "open",
-                hackathonId: params.hackathonId,
             });
             setFormData({ title: "", description: "", reportedBy: "admin" });
             onClose();
@@ -42,7 +39,7 @@ export default function IssuesPage({
         }
     };
 
-    const handleStatusChange = async (issueId: string, newStatus: Issue["status"]) => {
+    const handleStatusChange = async (issueId: number, newStatus: Issue["status"]) => {
         try {
             await updateIssueStatus(issueId, newStatus);
         } catch (error) {
@@ -156,14 +153,14 @@ export default function IssuesPage({
 
                                         <div className="flex items-center gap-4 text-sm">
                                             <span className="text-fluorescent-cyan">
-                                                Reported by: {issue.reportedBy}
+                                                Reported by: {issue.reporter_user_id}
                                             </span>
                                             <span className="text-outer-space">
-                                                {new Date(issue.createdAt).toLocaleString()}
+                                                {new Date(issue.created_at).toLocaleString()}
                                             </span>
-                                            {issue.updatedAt !== issue.createdAt && (
+                                            {issue.updated_at !== issue.created_at && (
                                                 <span className="text-outer-space">
-                                                    Updated: {new Date(issue.updatedAt).toLocaleString()}
+                                                    Updated: {new Date(issue.updated_at).toLocaleString()}
                                                 </span>
                                             )}
                                         </div>
@@ -343,7 +340,7 @@ export default function IssuesPage({
 
                                                         <div>
                                                             <p className="text-sm text-outer-space">Reported By:</p>
-                                                            <p className="text-white font-mono">{selectedIssue.reportedBy}</p>
+                                                            <p className="text-white font-mono">{selectedIssue.reporter_user_id}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -354,14 +351,14 @@ export default function IssuesPage({
                                                         <div>
                                                             <p className="text-sm text-outer-space">Created:</p>
                                                             <p className="text-white font-mono">
-                                                                {new Date(selectedIssue.createdAt).toLocaleString()}
+                                                                {new Date(selectedIssue.created_at).toLocaleString()}
                                                             </p>
                                                         </div>
 
                                                         <div>
                                                             <p className="text-sm text-outer-space">Last Updated:</p>
                                                             <p className="text-white font-mono">
-                                                                {new Date(selectedIssue.updatedAt).toLocaleString()}
+                                                                {new Date(selectedIssue.updated_at).toLocaleString()}
                                                             </p>
                                                         </div>
                                                     </div>
